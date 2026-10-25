@@ -151,6 +151,21 @@ input[type=range]{width:100%;accent-color:var(--accent);height:30px}
 @media (max-width:520px){.tf{grid-template-columns:1fr}}
 textarea.free{width:100%;border:2px solid var(--line);border-radius:10px;padding:8px;background:var(--surface);color:var(--ink)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* ---- Ergebnisse abgeben ---- */
+.abg-btn{background:var(--accent);color:var(--accent-ink);border:none;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700}
+.abg-ov{position:fixed;inset:0;background:rgba(2,8,40,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto;z-index:50}
+.abg-box{background:var(--surface);color:var(--ink);border-radius:16px;max-width:560px;width:100%;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.abg-box h2{margin:0}
+.abg-box ol{margin:0;padding-left:1.3em}
+.abg-box li{margin-bottom:6px}
+.abg-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.abg-in{border:2px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface);color:var(--ink);font:inherit}
+.abg-copy{background:var(--accent);color:var(--accent-ink);border:none;border-radius:999px;padding:12px 22px;font-weight:700;font-size:18px}
+.abg-close{background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:700;color:var(--ink)}
+.abg-fb{font-weight:700;min-height:1.4em}
+.abg-fb.ok{color:var(--ok)} .abg-fb.bad{color:var(--bad)}
+.abg-txt{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;border:2px solid var(--line);border-radius:10px;padding:8px;background:var(--surface-2);color:var(--ink)}
 </style>
 </head>
 <body>
@@ -159,7 +174,7 @@ textarea.free{width:100%;border:2px solid var(--line);border-radius:10px;padding
   <div class="hwrap">
     <div class="brand"><b>Linsen-Labor</b><span>Wie entsteht mit einer Sammellinse ein Bild?</span></div>
     <nav class="route" id="route" aria-label="Stationen"></nav>
-    <button class="reset" id="reset" type="button">Neu starten</button>
+    <button class="abg-btn" id="abgBtn" type="button">Ergebnisse abgeben</button><button class="reset" id="reset" type="button">Neu starten</button>
   </div>
 </header>
 
@@ -729,12 +744,12 @@ function resText(){
 function resFile(){var r=st.res||{};var n=((r.name||'Name')+'_'+(r.klasse||'')).replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,'_').replace(/_+$/,'');return 'Linsen-Labor_'+n+'.txt';}
 function resultsHTML(){var r=st.res||{};
   return '<div class="merk stack" id="resBox" style="border-color:var(--accent)"><h3 style="color:var(--ink)">Ergebnisse speichern</h3>'+
-   '<p class="muted">Trage deinen Namen ein und speichere deine Ergebnisse als Textdatei. Lade die Datei danach bei <b>IServ</b> in der Aufgabe „Linsen-Labor“ hoch.</p>'+
+   '<p class="muted">Trage deinen Namen ein und tippe auf <b>„Text kopieren“</b>. Füge den Text dann bei <b>IServ</b> in der Aufgabe „Linsen-Labor“ ein und gib ab.</p>'+
    '<div class="row"><label for="resName">Name</label><input class="num" style="width:12em;text-align:left;padding-inline:8px" id="resName" autocomplete="off" value="'+esc(r.name)+'">'+
    '<label for="resKlasse">Klasse</label><input class="num" style="width:5em" id="resKlasse" autocomplete="off" value="'+esc(r.klasse||'7d')+'"></div>'+
    '<div class="row"><button class="btn pri" type="button" id="resSave">Als Textdatei speichern</button><button class="btn sec" type="button" id="resCopy">Text kopieren</button><button class="btn tip" type="button" id="resShow">Text anzeigen</button></div>'+
    '<p class="fb" id="resFb"></p><textarea class="free" id="resTxt" rows="12" readonly hidden style="font-family:var(--f-mono);font-size:13px"></textarea>'+
-   '<p class="muted"><b>So geht’s bei IServ:</b> Aufgaben → „Linsen-Labor“ öffnen → Datei hochladen → gespeicherte Datei auswählen (meist im Ordner „Downloads“).</p></div>';}
+   '<p class="muted"><b>So geht’s bei IServ:</b> Aufgaben → „Linsen-Labor“ öffnen → Text einfügen (lange tippen → Einsetzen) → Abgeben.</p></div>';}
 function bindResults(){
   if(!$('resBox'))return;st.res=st.res||{};
   function upd(){st.res.name=$('resName').value.trim();st.res.klasse=$('resKlasse').value.trim();save();if(!$('resTxt').hidden)$('resTxt').value=resText();}
@@ -781,6 +796,51 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
 load();if(!st.t0){st.t0=Date.now();save();}if(!unlocked(st.station))st.station=0;
 buildChapters();setS(40);setG(30);
 render();
+
+/* ---------- Ergebnisse abgeben (jederzeit) ---------- */
+(function(){
+  var APP='Linsen-Labor';
+  var AKEY=(typeof KEY!=='undefined'?KEY:APP)+'-abgabe';
+  function lget(){try{return JSON.parse(localStorage.getItem(AKEY)||'{}')||{};}catch(e){return {};}}
+  function lset(o){try{localStorage.setItem(AKEY,JSON.stringify(o));}catch(e){}}
+  var A=lget();if(!A.t0){A.t0=Date.now();lset(A);}
+  function e(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+  
+  function abgText(A){st.res=st.res||{};st.res.name=A.name;st.res.klasse=A.klasse;try{save();}catch(err){}
+    var n=0;STATIONS.forEach(function(x,i){if(st.done[i])n++;});
+    return resText().replace('\r\nGeschafft: ','\r\nGeschafft ('+n+' von '+STATIONS.length+'): ');}
+
+  var ov=document.createElement('div');ov.className='abg-ov';ov.hidden=true;
+  ov.innerHTML='<div class="abg-box" role="dialog" aria-modal="true" aria-labelledby="abgH">'+
+    '<h2 id="abgH">Ergebnisse abgeben</h2>'+
+    '<ol><li>Trage deinen <b>Namen</b> und deine <b>Klasse</b> ein.</li>'+
+    '<li>Tippe auf <b>„Text kopieren“</b>.</li>'+
+    '<li>Öffne <b>IServ → Aufgaben → „'+e(APP)+'“</b>, füge den Text dort ein (lange tippen → Einsetzen) und tippe auf <b>Abgeben</b>.</li></ol>'+
+    '<p class="muted">Du kannst auch abgeben, wenn du noch nicht fertig bist. Im Text steht, wie weit du gekommen bist.</p>'+
+    '<div class="abg-row"><label for="abgName">Name</label><input class="abg-in" id="abgName" autocomplete="off" style="width:12em">'+
+    '<label for="abgKl">Klasse</label><input class="abg-in" id="abgKl" autocomplete="off" style="width:5em"></div>'+
+    '<div class="abg-row"><button class="abg-copy" type="button" id="abgCopy">Text kopieren</button>'+
+    '<button class="abg-close" type="button" id="abgClose">Schließen</button></div>'+
+    '<p class="abg-fb" id="abgFb"></p>'+
+    '<textarea class="abg-txt" id="abgTxt" rows="10" readonly hidden></textarea></div>';
+  document.body.appendChild(ov);
+  var $n=ov.querySelector('#abgName'),$k=ov.querySelector('#abgKl'),$t=ov.querySelector('#abgTxt'),$f=ov.querySelector('#abgFb');
+  function msg(ok,t){$f.className='abg-fb '+(ok?'ok':'bad');$f.textContent=t;}
+  function open(){A=lget();$n.value=A.name||'';$k.value=A.klasse||'';$t.hidden=true;msg(true,'');ov.hidden=false;setTimeout(function(){($n.value?ov.querySelector('#abgCopy'):$n).focus();},30);}
+  function close(){ov.hidden=true;}
+  function upd(){A.name=$n.value.trim();A.klasse=$k.value.trim();lset(A);}
+  $n.addEventListener('input',upd);$k.addEventListener('input',upd);
+  ov.querySelector('#abgClose').addEventListener('click',close);
+  ov.addEventListener('click',function(ev){if(ev.target===ov)close();});
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&!ov.hidden)close();});
+  ov.querySelector('#abgCopy').addEventListener('click',function(){
+    upd();if(!A.name){msg(false,'Trage zuerst deinen Namen ein.');$n.focus();return;}
+    var txt=abgText(A);$t.value=txt;
+    function sel(){$t.hidden=false;$t.focus();$t.select();msg(true,'Der Text ist markiert. Tippe lange darauf und wähle „Kopieren“.');}
+    try{navigator.clipboard.writeText(txt).then(function(){msg(true,'Kopiert! Jetzt in IServ bei der Aufgabe „'+APP+'“ einfügen und abgeben.');},sel);}catch(err){sel();}
+  });
+  document.getElementById('abgBtn').addEventListener('click',open);
+})();
 })();
 </script>
 </body>
