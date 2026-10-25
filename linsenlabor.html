@@ -744,12 +744,12 @@ function resText(){
 function resFile(){var r=st.res||{};var n=((r.name||'Name')+'_'+(r.klasse||'')).replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,'_').replace(/_+$/,'');return 'Linsen-Labor_'+n+'.txt';}
 function resultsHTML(){var r=st.res||{};
   return '<div class="merk stack" id="resBox" style="border-color:var(--accent)"><h3 style="color:var(--ink)">Ergebnisse speichern</h3>'+
-   '<p class="muted">Trage deinen Namen ein und tippe auf <b>„Text kopieren“</b>. Füge den Text dann bei <b>IServ</b> in der Aufgabe „Linsen-Labor“ ein und gib ab.</p>'+
+   '<p class="muted">Trage deinen Namen ein und tippe auf <b>„Als Textdatei speichern“</b> (iPad: „Laden“ bestätigen). Lade die Datei dann bei <b>IServ</b> in der Aufgabe „Linsen-Labor“ hoch und gib ab.</p>'+
    '<div class="row"><label for="resName">Name</label><input class="num" style="width:12em;text-align:left;padding-inline:8px" id="resName" autocomplete="off" value="'+esc(r.name)+'">'+
    '<label for="resKlasse">Klasse</label><input class="num" style="width:5em" id="resKlasse" autocomplete="off" value="'+esc(r.klasse||'7d')+'"></div>'+
    '<div class="row"><button class="btn pri" type="button" id="resSave">Als Textdatei speichern</button><button class="btn sec" type="button" id="resCopy">Text kopieren</button><button class="btn tip" type="button" id="resShow">Text anzeigen</button></div>'+
    '<p class="fb" id="resFb"></p><textarea class="free" id="resTxt" rows="12" readonly hidden style="font-family:var(--f-mono);font-size:13px"></textarea>'+
-   '<p class="muted"><b>So geht’s bei IServ:</b> Aufgaben → „Linsen-Labor“ öffnen → Text einfügen (lange tippen → Einsetzen) → Abgeben.</p></div>';}
+   '<p class="muted"><b>So geht’s bei IServ:</b> Aufgaben → „Linsen-Labor“ öffnen → Datei hochladen → in <b>Dateien → Downloads</b> die gespeicherte Datei auswählen → Abgeben.</p></div>';}
 function bindResults(){
   if(!$('resBox'))return;st.res=st.res||{};
   function upd(){st.res.name=$('resName').value.trim();st.res.klasse=$('resKlasse').value.trim();save();if(!$('resTxt').hidden)$('resTxt').value=resText();}
@@ -814,19 +814,20 @@ render();
   ov.innerHTML='<div class="abg-box" role="dialog" aria-modal="true" aria-labelledby="abgH">'+
     '<h2 id="abgH">Ergebnisse abgeben</h2>'+
     '<ol><li>Trage deinen <b>Namen</b> und deine <b>Klasse</b> ein.</li>'+
-    '<li>Tippe auf <b>„Text kopieren“</b>.</li>'+
-    '<li>Öffne <b>IServ → Aufgaben → „'+e(APP)+'“</b>, füge den Text dort ein (lange tippen → Einsetzen) und tippe auf <b>Abgeben</b>.</li></ol>'+
+    '<li>Tippe auf <b>„Datei herunterladen“</b>. Auf dem iPad fragt Safari nach: Tippe auf <b>„Laden“</b>. Die Datei liegt dann in der App <b>Dateien</b> im Ordner <b>Downloads</b>.</li>'+
+    '<li>Öffne <b>IServ → Aufgaben → „'+e(APP)+'“</b>, lade die Datei hoch (aus <b>Dateien → Downloads</b>) und tippe auf <b>Abgeben</b>.</li></ol>'+
     '<p class="muted">Du kannst auch abgeben, wenn du noch nicht fertig bist. Im Text steht, wie weit du gekommen bist.</p>'+
     '<div class="abg-row"><label for="abgName">Name</label><input class="abg-in" id="abgName" autocomplete="off" style="width:12em">'+
     '<label for="abgKl">Klasse</label><input class="abg-in" id="abgKl" autocomplete="off" style="width:5em"></div>'+
-    '<div class="abg-row"><button class="abg-copy" type="button" id="abgCopy">Text kopieren</button>'+
+    '<div class="abg-row"><button class="abg-copy" type="button" id="abgDl">Datei herunterladen</button>'+
     '<button class="abg-close" type="button" id="abgClose">Schließen</button></div>'+
+    '<p class="muted" style="font-size:14px">Klappt das Herunterladen nicht? Dann <button type="button" id="abgCopy" style="background:none;border:none;padding:0;color:var(--blue);text-decoration:underline;font:inherit;cursor:pointer">kopiere den Text</button> und frag deine Lehrkraft.</p>'+
     '<p class="abg-fb" id="abgFb"></p>'+
     '<textarea class="abg-txt" id="abgTxt" rows="10" readonly hidden></textarea></div>';
   document.body.appendChild(ov);
   var $n=ov.querySelector('#abgName'),$k=ov.querySelector('#abgKl'),$t=ov.querySelector('#abgTxt'),$f=ov.querySelector('#abgFb');
   function msg(ok,t){$f.className='abg-fb '+(ok?'ok':'bad');$f.textContent=t;}
-  function open(){A=lget();$n.value=A.name||'';$k.value=A.klasse||'';$t.hidden=true;msg(true,'');ov.hidden=false;setTimeout(function(){($n.value?ov.querySelector('#abgCopy'):$n).focus();},30);}
+  function open(){A=lget();$n.value=A.name||'';$k.value=A.klasse||'';$t.hidden=true;msg(true,'');ov.hidden=false;setTimeout(function(){($n.value?ov.querySelector('#abgDl'):$n).focus();},30);}
   function close(){ov.hidden=true;}
   function upd(){A.name=$n.value.trim();A.klasse=$k.value.trim();lset(A);}
   $n.addEventListener('input',upd);$k.addEventListener('input',upd);
@@ -837,7 +838,16 @@ render();
     upd();if(!A.name){msg(false,'Trage zuerst deinen Namen ein.');$n.focus();return;}
     var txt=abgText(A);$t.value=txt;
     function sel(){$t.hidden=false;$t.focus();$t.select();msg(true,'Der Text ist markiert. Tippe lange darauf und wähle „Kopieren“.');}
-    try{navigator.clipboard.writeText(txt).then(function(){msg(true,'Kopiert! Jetzt in IServ bei der Aufgabe „'+APP+'“ einfügen und abgeben.');},sel);}catch(err){sel();}
+    try{navigator.clipboard.writeText(txt).then(function(){msg(true,'Text kopiert.');},sel);}catch(err){sel();}
+  });
+  function dateiname(){return resFile();return (APP+'_'+(A.name||'Name')+'_'+(A.klasse||'')).replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,'_').replace(/_+$/,'')+'.txt';}
+  ov.querySelector('#abgDl').addEventListener('click',function(){
+    upd();if(!A.name){msg(false,'Trage zuerst deinen Namen ein.');$n.focus();return;}
+    var txt=abgText(A).replace(/\r?\n/g,'\r\n'),name=dateiname();
+    try{var bl=new Blob(['\ufeff'+txt],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(bl),a=document.createElement('a');
+      a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},10000);
+      msg(true,'Die Datei „'+name+'“ wird heruntergeladen. Lade sie jetzt in IServ bei der Aufgabe „'+APP+'“ hoch.');}
+    catch(err){msg(false,'Herunterladen klappt hier nicht. Kopiere stattdessen den Text.');}
   });
   document.getElementById('abgBtn').addEventListener('click',open);
 })();
