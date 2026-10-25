@@ -100,6 +100,10 @@
      - info:  kurze Zeile unter dem Namen (optional)
      - datei: Dateiname der App im selben Repository.
               Leer lassen ("") = wird als „folgt bald“ angezeigt.
+     - frei:  false = App ist hochgeladen, aber noch gesperrt („folgt bald“).
+              Weglassen oder true = App ist anklickbar.
+     - ab:    (optional) Datum, ab dem die App automatisch frei ist,
+              z. B. ab: "2026-11-03". Davor steht sie auf „folgt bald“.
      ========================================================= */
   const apps = [
     { thema: "UV 2 – Wie kann man Lichtstrahlen beeinflussen?", nr: 1, titel: "Linsen-Labor", info: "Linsen und Lichtstrahlen", datei: "linsenlabor.html" },
@@ -116,15 +120,17 @@
       liste.appendChild(h);
       aktuellesThema = app.thema;
     }
-    const el = document.createElement(app.datei ? "a" : "div");
-    el.className = "app" + (app.datei ? "" : " gesperrt");
-    if (app.datei) el.href = app.datei;
+    const offen = !!app.datei && app.frei !== false &&
+      (!app.ab || new Date() >= new Date(app.ab + "T00:00:00"));
+    const el = document.createElement(offen ? "a" : "div");
+    el.className = "app" + (offen ? "" : " gesperrt");
+    if (offen) el.href = app.datei;
     el.innerHTML =
       '<div class="nr">' + app.nr + '</div>' +
       '<div><div class="titel"></div><div class="info"></div></div>' +
-      (app.datei ? '<div class="pfeil">›</div>' : '');
+      (offen ? '<div class="pfeil">›</div>' : '');
     el.querySelector(".titel").textContent = app.titel;
-    el.querySelector(".info").textContent = app.datei ? (app.info || "") : "folgt bald";
+    el.querySelector(".info").textContent = offen ? (app.info || "") : "folgt bald";
     liste.appendChild(el);
   });
 </script>
