@@ -95,14 +95,15 @@
   /* =========================================================
      HIER BEARBEITEN: Für jede neue App eine Zeile ergänzen.
      - thema: Überschrift (z. B. die Unterrichtseinheit)
-     - nr:    Stundennummer
+     - nr:    Nummer auf der Kachel
      - titel: Name der App
+     - info:  kurze Zeile unter dem Namen (optional)
      - datei: Dateiname der App im selben Repository.
               Leer lassen ("") = wird als „folgt bald“ angezeigt.
      ========================================================= */
   const apps = [
-    { thema: "Elektrizität", nr: 6, titel: "Elektrostatik", datei: "elektrostatik.html" },
-    // { thema: "Elektrizität", nr: 7, titel: "Name der nächsten App", datei: "" },
+    { thema: "UV 2 – Wie kann man Lichtstrahlen beeinflussen?", nr: 1, titel: "Linsen-Labor", info: "Linsen und Lichtstrahlen", datei: "linsenlabor.html" },
+    // { thema: "UV 2 – Wie kann man Lichtstrahlen beeinflussen?", nr: 2, titel: "Name der nächsten App", info: "", datei: "" },
   ];
 
   const liste = document.getElementById("liste");
@@ -123,7 +124,7 @@
       '<div><div class="titel"></div><div class="info"></div></div>' +
       (app.datei ? '<div class="pfeil">›</div>' : '');
     el.querySelector(".titel").textContent = app.titel;
-    el.querySelector(".info").textContent = app.datei ? "Stunde " + app.nr : "folgt bald";
+    el.querySelector(".info").textContent = app.datei ? (app.info || "") : "folgt bald";
     liste.appendChild(el);
   });
 </script>
