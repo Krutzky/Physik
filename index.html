@@ -69,6 +69,17 @@
   .info { color: var(--muted); font-size: 0.9rem; }
   .pfeil { margin-left: auto; color: var(--accent); font-size: 1.3rem; }
   .gesperrt { opacity: 0.5; }
+  .zurueck {
+    display: inline-block;
+    margin: 0 0 4px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+  }
   .hinweis {
     margin-top: 32px;
     padding: 14px 16px;
@@ -81,7 +92,7 @@
 <body>
 <main>
   <h1>Physik-Apps</h1>
-  <p class="sub">Wähle die App für die heutige Stunde.</p>
+  <p class="sub">Wähle dein Thema.</p>
 
   <div id="liste"></div>
 
@@ -111,28 +122,78 @@
   ];
 
   const liste = document.getElementById("liste");
-  let aktuellesThema = null;
+  const sub = document.querySelector(".sub");
+  const subStart = sub.textContent;
 
-  apps.forEach(app => {
-    if (app.thema !== aktuellesThema) {
-      const h = document.createElement("h2");
-      h.textContent = app.thema;
-      liste.appendChild(h);
-      aktuellesThema = app.thema;
-    }
-    const offen = !!app.datei && app.frei !== false &&
+  function istOffen(app) {
+    return !!app.datei && app.frei !== false &&
       (!app.ab || new Date() >= new Date(app.ab + "T00:00:00"));
+  }
+
+  // Themen in der Reihenfolge, in der sie in der Liste vorkommen
+  const themen = [];
+  apps.forEach(app => { if (!themen.includes(app.thema)) themen.push(app.thema); });
+
+  function kachel(nr, titel, info, href, offen) {
     const el = document.createElement(offen ? "a" : "div");
     el.className = "app" + (offen ? "" : " gesperrt");
-    if (offen) el.href = app.datei;
+    if (offen) el.href = href;
     el.innerHTML =
-      '<div class="nr">' + app.nr + '</div>' +
+      '<div class="nr"></div>' +
       '<div><div class="titel"></div><div class="info"></div></div>' +
       (offen ? '<div class="pfeil">›</div>' : '');
-    el.querySelector(".titel").textContent = app.titel;
-    el.querySelector(".info").textContent = offen ? (app.info || "") : "folgt bald";
-    liste.appendChild(el);
-  });
+    el.querySelector(".nr").textContent = nr;
+    el.querySelector(".titel").textContent = titel;
+    el.querySelector(".info").textContent = info;
+    return el;
+  }
+
+  function zeigeUebersicht() {
+    liste.innerHTML = "";
+    sub.textContent = subStart;
+    if (!themen.length) {
+      liste.innerHTML = '<p class="sub">Hier erscheinen bald die ersten Apps.</p>';
+      return;
+    }
+    const h = document.createElement("h2");
+    h.textContent = "Themen";
+    liste.appendChild(h);
+    themen.forEach((thema, i) => {
+      const alle = apps.filter(a => a.thema === thema);
+      const offen = alle.filter(istOffen).length;
+      const info = offen
+        ? offen + (offen === 1 ? " App" : " Apps")
+        : "folgt bald";
+      liste.appendChild(kachel(i + 1, thema, info, "#thema=" + encodeURIComponent(thema), offen > 0));
+    });
+  }
+
+  function zeigeThema(thema) {
+    liste.innerHTML = "";
+    sub.textContent = "Wähle eine App.";
+    const zurueck = document.createElement("a");
+    zurueck.href = "#";
+    zurueck.className = "zurueck";
+    zurueck.textContent = "‹ Alle Themen";
+    liste.appendChild(zurueck);
+    const h = document.createElement("h2");
+    h.textContent = thema;
+    liste.appendChild(h);
+    apps.filter(a => a.thema === thema).forEach(app => {
+      const offen = istOffen(app);
+      liste.appendChild(kachel(app.nr, app.titel, offen ? (app.info || "") : "folgt bald", app.datei, offen));
+    });
+  }
+
+  function anzeigen() {
+    const m = location.hash.match(/^#thema=(.*)$/);
+    const thema = m ? decodeURIComponent(m[1]) : null;
+    if (thema && themen.includes(thema)) zeigeThema(thema);
+    else zeigeUebersicht();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", anzeigen);
+  anzeigen();
 </script>
 </body>
 </html>
