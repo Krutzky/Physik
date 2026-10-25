@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Physik-Apps</title>
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #1d2433;
+    --muted: #6b7486;
+    --accent: #2f6fde;
+    --accent-soft: #e6eefc;
+    --border: #e1e5ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151c;
+      --card: #1b2029;
+      --text: #e8ebf2;
+      --muted: #9aa3b5;
+      --accent: #6c9cf0;
+      --accent-soft: #23314b;
+      --border: #2a303c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height: 1.45;
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 28px 16px 48px; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 28px 0 10px;
+  }
+  .app {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    color: inherit;
+  }
+  a.app:active { transform: scale(0.99); }
+  .nr {
+    flex: 0 0 auto;
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+    display: grid; place-items: center;
+  }
+  .titel { font-weight: 600; }
+  .info { color: var(--muted); font-size: 0.9rem; }
+  .pfeil { margin-left: auto; color: var(--accent); font-size: 1.3rem; }
+  .gesperrt { opacity: 0.5; }
+  .hinweis {
+    margin-top: 32px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--accent-soft);
+    font-size: 0.95rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Physik-Apps</h1>
+  <p class="sub">Wähle die App für die heutige Stunde.</p>
+
+  <div id="liste"></div>
+
+  <div class="hinweis">
+    <strong>Fertig?</strong> Tippe in der App auf „Ergebnis kopieren“ und gib es in
+    <strong>IServ → Aufgaben</strong> bei der passenden Aufgabe ab.
+  </div>
+</main>
+
+<script>
+  /* =========================================================
+     HIER BEARBEITEN: Für jede neue App eine Zeile ergänzen.
+     - thema: Überschrift (z. B. die Unterrichtseinheit)
+     - nr:    Stundennummer
+     - titel: Name der App
+     - datei: Dateiname der App im selben Repository.
+              Leer lassen ("") = wird als „folgt bald“ angezeigt.
+     ========================================================= */
+  const apps = [
+    { thema: "Elektrizität", nr: 6, titel: "Elektrostatik", datei: "elektrostatik.html" },
+    // { thema: "Elektrizität", nr: 7, titel: "Name der nächsten App", datei: "" },
+  ];
+
+  const liste = document.getElementById("liste");
+  let aktuellesThema = null;
+
+  apps.forEach(app => {
+    if (app.thema !== aktuellesThema) {
+      const h = document.createElement("h2");
+      h.textContent = app.thema;
+      liste.appendChild(h);
+      aktuellesThema = app.thema;
+    }
+    const el = document.createElement(app.datei ? "a" : "div");
+    el.className = "app" + (app.datei ? "" : " gesperrt");
+    if (app.datei) el.href = app.datei;
+    el.innerHTML =
+      '<div class="nr">' + app.nr + '</div>' +
+      '<div><div class="titel"></div><div class="info"></div></div>' +
+      (app.datei ? '<div class="pfeil">›</div>' : '');
+    el.querySelector(".titel").textContent = app.titel;
+    el.querySelector(".info").textContent = app.datei ? "Stunde " + app.nr : "folgt bald";
+    liste.appendChild(el);
+  });
+</script>
+</body>
+</html>
