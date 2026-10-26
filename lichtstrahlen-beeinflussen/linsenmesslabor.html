@@ -250,19 +250,23 @@ var st={station:0,done:[false,false,false,false,false],s:40,g:30,rays:false,thic
   s2:{row:0,vals:{},tip:0},
   s3:{jd:{},jdOk:false,gl:null,glOk:false,own:'',ok:false},
   s4:{gaps:{},ok:false,kino:null,kinoOk:false,refl:''},
-  s5:{a:null,b:null},res:{},tries:{},t0:null};
+  s5:{a:null,b:null},res:{},tries:{},help:{},t0:null};
 
 /* ---------- Speicher (nur Bequemlichkeit) ---------- */
 var KEY='linsen-messlabor-v1';
-function save(){try{localStorage.setItem(KEY,JSON.stringify({station:st.station,done:st.done,guess:st.guess,s1:st.s1,s2:st.s2,s3:st.s3,s4:st.s4,s5:st.s5,res:st.res,tries:st.tries,t0:st.t0}));}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({station:st.station,done:st.done,guess:st.guess,s1:st.s1,s2:st.s2,s3:st.s3,s4:st.s4,s5:st.s5,res:st.res,tries:st.tries,help:st.help,t0:st.t0}));}catch(e){}}
 function load(){try{var x=JSON.parse(localStorage.getItem(KEY)||'null');if(!x)return;
   st.station=x.station||0;if(x.done)st.done=x.done;while(st.done.length<5)st.done.push(false);st.guess=x.guess||null;
   ['s1','s2','s3','s4','s5'].forEach(function(k){if(x[k])st[k]=Object.assign(st[k],x[k]);});
-  if(x.res)st.res=x.res;if(x.tries)st.tries=x.tries;if(x.t0)st.t0=x.t0;}catch(e){}}
+  if(x.res)st.res=x.res;if(x.tries)st.tries=x.tries;if(x.help)st.help=x.help;if(x.t0)st.t0=x.t0;}catch(e){}}
 
 /* ---------- Versuche zählen ---------- */
 var RKEY='linsen-messlabor-resets';
 function tryInc(k,ok,val){var t=st.tries[k]||(st.tries[k]={n:0,ok:false,first:null});if(t.ok)return;t.n++;if(t.first===null)t.first=!!ok;if(ok)t.ok=true;else if(val!=null&&val!==''){t.w=t.w||[];if(t.w.length<12)t.w.push(val);}save();}
+/* Hilfe: nach 3 Fehlversuchen kann die Lösung angezeigt werden */
+function stuck(k){var t=st.tries[k];return !!(t&&!t.ok&&t.n>=3);}
+function showHelp(fb,k,fn){if(!fb||!stuck(k))return;var id='hb_'+k;if(document.getElementById(id))return;var b=document.createElement('button');b.type='button';b.id=id;b.className='btn tip';b.style.marginTop='6px';b.textContent='Ich komme nicht weiter: Lösung zeigen';
+  b.addEventListener('click',function(){st.help[k]=true;save();fn();});var wrap=document.createElement('div');wrap.className='row';wrap.appendChild(b);(fb.parentNode.classList&&fb.parentNode.classList.contains('row')?fb.parentNode:fb).insertAdjacentElement('afterend',wrap);}
 function fnv(str){var h=0x811c9dc5;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return ('0000000'+h.toString(16)).slice(-8);}
 function resets(){try{return +(localStorage.getItem(RKEY)||0);}catch(e){return 0;}}
 
@@ -489,7 +493,7 @@ function r1(){
       MARKS.forEach(function(m){var el=$('m'+m.n);if(el.value===''){empty++;return;}var ok=+el.value===m.a;el.className='sel '+(ok?'ok':'bad');if(!ok){wrong.push(m);codes.push(m.n+':'+el.value);}});
       if(empty){fb.className='fb bad';fb.textContent='Es fehlen noch '+empty+' Zuordnungen.';return;}
       tryInc('s1begr',!wrong.length,codes.join(','));
-      if(wrong.length){fb.className='fb bad';fb.textContent=(wrong.length===1?'Eine Zuordnung stimmt':''+wrong.length+' Zuordnungen stimmen')+' noch nicht. Tipp zu Nummer '+wrong[0].n+': Schau, wo die Linie beginnt und endet.';return;}
+      if(wrong.length){fb.className='fb bad';fb.textContent=(wrong.length===1?'Eine Zuordnung stimmt':''+wrong.length+' Zuordnungen stimmen')+' noch nicht. Tipp zu Nummer '+wrong[0].n+': Schau, wo die Linie beginnt und endet.';showHelp(fb,'s1begr',function(){MARKS.forEach(function(m){st.s1.map[m.n]=String(m.a);});save();r1();var f=$('fb1m');f.className='fb ok';f.textContent='Die Lösung ist eingetragen. Schau sie dir an der optischen Bank an und tippe auf „Prüfen“.';});return;}
       st.s1.mapOk=true;save();r1();var f=$('fb1m');f.className='fb ok';f.textContent='Alles richtig zugeordnet! An der Bank stehen jetzt die echten Werte.';});
   } else {$('fb1m').className='fb ok';$('fb1m').textContent='Alles richtig zugeordnet!';}
   if(st.s1.mapOk&&!st.s1.gOk){
@@ -497,7 +501,7 @@ function r1(){
     $('c1g').addEventListener('click',function(){var v=num($('gIn').value),fb=$('fb1g');if(isNaN(v)){fb.className='fb bad';fb.textContent='Trage eine Zahl ein.';return;}
       var ok=Math.abs(v-G_CM)<=0.15;tryInc('s1G',ok,String(v));
       if(ok){st.s1.gOk=true;save();r1();$('fb1g').className='fb ok';$('fb1g').textContent='Genau: G = 2 cm. Das Dia-L bleibt immer gleich groß.';}
-      else{$('gIn').className='num bad';fb.className='fb bad';fb.textContent=v>5?'Das ist zu groß. Lies am Lineal ab: Jeder große Strich ist 1 cm.':'Noch nicht. Die 0 des Lineals liegt am unteren Rand des L. Wo endet das L oben?';}});
+      else{$('gIn').className='num bad';fb.className='fb bad';fb.textContent=v>5?'Das ist zu groß. Lies am Lineal ab: Jeder große Strich ist 1 cm.':'Noch nicht. Die 0 des Lineals liegt am unteren Rand des L. Wo endet das L oben?';showHelp(fb,'s1G',function(){st.s1.G='2';save();r1();var f=$('fb1g');f.className='fb ok';f.textContent='Das L ist 2 cm hoch. Tippe auf „Prüfen“.';});}});
   } else if(st.s1.gOk){$('fb1g').className='fb ok';$('fb1g').textContent='Genau: G = 2 cm.';}
   if(st.s1.gOk){
     bindChoice('.choice[data-q="f"]',function(box,j){tryInc('s1f',j===QF.a,j);st.s1.f=j;var fb=$('fb1f');
@@ -541,9 +545,9 @@ function r2(){
       if(st.g!==g){fb.textContent='Stelle zuerst das Dia auf g = '+g+' cm (oberes Display).';return;}
       if(isNaN(bi)||isNaN(Bi)){fb.textContent='Trage beide Messwerte ein (b und B).';return;}
       var bt=bOf(g),BT=Btrue(g);
-      if(!isSharp(g,st.s)){tryInc(key,false,'scharf');fb.textContent='Das Bild auf dem Schirm ist noch nicht scharf. Schiebe den Schirm '+(st.s>bt?'näher an die Linse.':'weiter weg von der Linse.');return;}
-      if(Math.abs(bi-st.s)>0.3){tryInc(key,false,'b');$('inB').className='num bad';fb.textContent='Die Bildweite stimmt nicht. Lies sie am Schirm-Display ab.';return;}
-      if(Math.abs(Bi-BT)>Math.max(0.2,0.12*BT)){tryInc(key,false,'B');$('inBB').className='num bad';fb.textContent=(Bi===G_CM&&Math.abs(BT-G_CM)>0.3)?'2 cm ist die Größe des Dias. Miss das Bild auf dem Schirm!':'Miss die Bildgröße noch einmal. Die 0 liegt am unteren Rand des Bildes, lies am oberen Rand ab.';return;}
+      if(!isSharp(g,st.s)){tryInc(key,false,'scharf');fb.textContent='Das Bild auf dem Schirm ist noch nicht scharf. Schiebe den Schirm '+(st.s>bt?'näher an die Linse.':'weiter weg von der Linse.');showHelp(fb,key,function(){setG(g);setS(Math.round(bt*2)/2);v.bIn=fmtS(Math.round(bt*2)/2);v.BIn=fmt(BT,1);save();r2();var f=$('fb2');f.className='fb ok';f.textContent='Der Schirm steht jetzt richtig und die Werte sind eingetragen. Schau dir Display und Lineal an und tippe auf „Messwerte prüfen“.';});return;}
+      if(Math.abs(bi-st.s)>0.3&&Math.abs(bi-bt)>0.8){tryInc(key,false,'b');$('inB').className='num bad';fb.textContent='Die Bildweite stimmt nicht. Lies sie am Schirm-Display ab.';showHelp(fb,key,function(){setG(g);setS(Math.round(bt*2)/2);v.bIn=fmtS(Math.round(bt*2)/2);v.BIn=fmt(BT,1);save();r2();var f=$('fb2');f.className='fb ok';f.textContent='Der Schirm steht jetzt richtig und die Werte sind eingetragen. Schau dir Display und Lineal an und tippe auf „Messwerte prüfen“.';});return;}
+      if(Math.abs(Bi-BT)>Math.max(0.3,0.15*BT)){tryInc(key,false,'B');$('inBB').className='num bad';fb.textContent=(Bi===G_CM&&Math.abs(BT-G_CM)>0.3)?'2 cm ist die Größe des Dias. Miss das Bild auf dem Schirm!':'Miss die Bildgröße noch einmal. Die 0 liegt am unteren Rand des Bildes, lies am oberen Rand ab.';showHelp(fb,key,function(){setG(g);setS(Math.round(bt*2)/2);v.bIn=fmtS(Math.round(bt*2)/2);v.BIn=fmt(BT,1);save();r2();var f=$('fb2');f.className='fb ok';f.textContent='Der Schirm steht jetzt richtig und die Werte sind eingetragen. Schau dir Display und Lineal an und tippe auf „Messwerte prüfen“.';});return;}
       tryInc(key,true);v.ok=true;v.b=bi;v.B=Bi;v.g=g;
       if(cur<ROWS.length-1)st.s2.row=cur+1;
       if(rowsDone()===ROWS.length)finish(1);
@@ -596,7 +600,7 @@ function r3(){
       JD.forEach(function(g,i){var s=$('j'+i);if(s.value===''){empty++;return;}var ok=+s.value===g.a;s.className='sel '+(ok?'ok':'bad');if(!ok){wrong++;codes.push(i+':'+s.value);}});
       if(empty){fb.className='fb bad';fb.textContent='Es sind noch '+empty+' Lücken offen.';return;}
       tryInc('s3jd',!wrong,codes.join(','));
-      if(wrong){fb.className='fb bad';fb.textContent=(wrong>1?wrong+' Lücken stimmen':'Eine Lücke stimmt')+' noch nicht. Lies die Tabelle von oben nach unten: g wird kleiner. Was machen b und B?';return;}
+      if(wrong){fb.className='fb bad';fb.textContent=(wrong>1?wrong+' Lücken stimmen':'Eine Lücke stimmt')+' noch nicht. Lies die Tabelle von oben nach unten: g wird kleiner. Was machen b und B?';showHelp(fb,'s3jd',function(){JD.forEach(function(g,i){st.s3.jd[i]=String(g.a);});save();r3();var f=$('fb3');f.className='fb ok';f.textContent='Die Lösung ist eingetragen. Vergleiche mit deiner Tabelle und tippe auf „Prüfen“.';});return;}
       st.s3.jdOk=true;save();r3();var f=$('fb3');f.className='fb ok';f.textContent='Richtig!';});
   } else {$('fb3').className='fb ok';$('fb3').textContent='Richtig!';}
   if(st.s3.jdOk){
@@ -620,12 +624,12 @@ function r3(){
 var GAPS=[
   {pre:'Der Abstand vom Gegenstand bis zur Linse heißt ',post:'.',o:['Bildweite b','Gegenstandsweite g','Brennweite f'],a:1},
   {pre:'Der Abstand von der Linse bis zum Bild heißt ',post:'.',o:['Bildweite b','Gegenstandsweite g','Brennweite f'],a:0},
-  {pre:'Je kleiner die Gegenstandsweite ist, desto ',post:' ist die Bildweite',o:['größer','kleiner'],a:0},
-  {pre:'und desto ',post:' ist das Bild.',o:['größer','kleiner'],a:0},
-  {pre:'Ist der Gegenstand weit von der Linse entfernt, entsteht ein ',post:' Bild',o:['kleines','großes'],a:0},
-  {pre:'in der Nähe des ',post:'.',o:['Brennpunkts','Gegenstands','Linsenrands'],a:0}
+  {pre:'Je kleiner die Gegenstandsweite ist, desto ',post:' ist die Bildweite.',o:['größer','kleiner'],a:0},
+  {pre:'Je kleiner die Gegenstandsweite ist, desto ',post:' ist das Bild.',o:['größer','kleiner'],a:0},
+  {pre:'Ist der Gegenstand weit weg von der Linse, ist das Bild ',post:'.',o:['klein','groß'],a:0}
 ];
-var MERK='<div class="merk"><h3>Merksatz: Lage und Größe des Bildes</h3><p>Der Abstand vom Gegenstand bis zur Linse heißt <span class="k">Gegenstandsweite g</span>. Der Abstand von der Linse bis zum Bild heißt <span class="k">Bildweite b</span>. Je kleiner die Gegenstandsweite ist, desto <span class="k">größer</span> ist die Bildweite und desto <span class="k">größer</span> ist das Bild. Ist der Gegenstand weit von der Linse entfernt, entsteht ein <span class="k">kleines</span> Bild in der Nähe des <span class="k">Brennpunkts</span>.</p></div>';
+var WORTE='Gegenstandsweite g · größer · klein · Bildweite b · größer';
+var MERK='<div class="merk"><h3>Merksatz: Lage und Größe des Bildes</h3><p>Der Abstand vom Gegenstand bis zur Linse heißt <span class="k">Gegenstandsweite g</span>. Der Abstand von der Linse bis zum Bild heißt <span class="k">Bildweite b</span>. Je kleiner die Gegenstandsweite ist, desto <span class="k">größer</span> ist die Bildweite. Je kleiner die Gegenstandsweite ist, desto <span class="k">größer</span> ist das Bild. Ist der Gegenstand weit weg von der Linse, ist das Bild <span class="k">klein</span>.</p></div>';
 var KINO={q:'Die Kino-AG stellt den Beamer weiter nach hinten. Das Bild auf der Leinwand wird größer, aber unscharf. Was muss im Beamer passieren, damit es wieder scharf wird?',
   o:['Der Abstand zwischen Bild-Chip und Linse muss etwas kleiner werden.','Der Abstand zwischen Bild-Chip und Linse muss etwas größer werden.','Nichts. Man muss nur die Lampe heller machen.'],a:0,
   ok:'Richtig! Die Leinwand ist weiter weg, also ist die Bildweite größer. Dafür muss die Gegenstandsweite kleiner werden. Genau das macht der Scharfstell-Ring am Beamer.',
@@ -639,6 +643,7 @@ function r4(){
   $('task').innerHTML=
    '<div><p class="eyebrow">Station 4 · Merksatz</p><h2>Unser Merksatz</h2></div>'+
    '<p>Wähle die passenden Wörter. Mit der optischen Bank kannst du alles nachprüfen.</p>'+
+   '<p class="hint"><b>Wortspeicher:</b> '+WORTE+'</p>'+
    '<div class="gap"><ol>'+GAPS.map(function(g,i){return '<li>'+g.pre+'<select class="sel" id="g'+i+'" aria-label="Lücke '+(i+1)+'"><option value="">…</option>'+g.o.map(function(o,j){return '<option value="'+j+'">'+o+'</option>';}).join('')+'</select>'+g.post+'</li>';}).join('')+'</ol></div>'+
    '<div class="row"><button class="btn pri" type="button" id="c4">Prüfen</button><span class="fb" id="fb4"></span></div>'+
    (st.s4.ok?MERK+'<p class="muted">Schreibe den Merksatz gleich in dein Heft. Wir besprechen ihn gemeinsam.</p>':'')+
@@ -648,7 +653,7 @@ function r4(){
   $('c4').addEventListener('click',function(){if(st.s4.ok)return;var wrong=0,empty=0;GAPS.forEach(function(g,i){var s=$('g'+i);if(s.value===''){empty++;return;}var ok=+s.value===g.a;s.className='sel '+(ok?'ok':'bad');if(!ok)wrong++;});
     var fb=$('fb4');if(empty){fb.className='fb bad';fb.textContent='Es sind noch '+empty+' Lücken offen.';return;}
     tryInc('s4gaps',!wrong,GAPS.map(function(g,i){var v=$('g'+i).value;return v!==''&&+v!==g.a?i+':'+v:null;}).filter(Boolean).join(','));
-    if(wrong){fb.className='fb bad';fb.textContent=wrong+' Lücke'+(wrong>1?'n stimmen':' stimmt')+' noch nicht. Schau in deine Tabelle oder teste an der optischen Bank!';return;}
+    if(wrong){fb.className='fb bad';fb.textContent=wrong+' Lücke'+(wrong>1?'n stimmen':' stimmt')+' noch nicht. Schau in deine Tabelle oder teste an der optischen Bank!';showHelp(fb,'s4gaps',function(){GAPS.forEach(function(g,i){st.s4.gaps[i]=String(g.a);});save();r4();var f=$('fb4');f.className='fb ok';f.textContent='Die Lösung ist eingetragen. Lies sie dir durch und tippe auf „Prüfen“.';});return;}
     st.s4.ok=true;save();r4();});
   if(st.s4.ok){
     $('refl').addEventListener('input',function(){st.s4.refl=this.value;save();});
@@ -721,11 +726,13 @@ function resText(){
   if(mins0!=null)L.push('  Bearbeitungszeit seit dem Start: '+mins0+' min');
   L.push('  „Neu starten“ gedrückt (auf diesem Gerät): '+resets()+'-mal');
   L.push('');
+  var hk=Object.keys(st.help||{});L.push('  Lösung anzeigen benutzt: '+(hk.length?hk.length+'-mal ('+hk.map(function(k){var x=TL.filter(function(t){return t[0]===k;})[0];return x?x[1]:k;}).join('; ')+')':'nein'));
+  L.push('');
   L.push('PROFI-ZUSATZ ★');
   P5.forEach(function(x){var v=st.s5[x.id];L.push('  '+x.title+': '+(v==null?'(nicht bearbeitet)':x.o[v]+(v===x.a?'  ✓':'  ✗')));});
   var rows=ROWS.map(function(g,i){var v=st.s2.vals[i];return v&&v.ok?[g,v.b,v.B]:null;});
   var data={v:1,name:r.name||'',klasse:r.klasse||'',ts:Date.now(),done:st.done,guess:st.guess,tries:st.tries,tips:{s2:st.s2.tip||0},
-    rows:rows,G:st.s1.G||'',own:st.s3.own||'',refl:st.s4.refl||'',kino:st.s4.kino,s5:st.s5,mins:mins0,resets:resets()};
+    rows:rows,G:st.s1.G||'',own:st.s3.own||'',refl:st.s4.refl||'',kino:st.s4.kino,s5:st.s5,help:Object.keys(st.help||{}),mins:mins0,resets:resets()};
   var json=JSON.stringify(data);
   L.push('');L.push('Die beiden folgenden Zeilen sind für die Auswertung. Bitte nicht verändern.');
   L.push('#DATEN '+json);L.push('#PRUEF '+fnv('LM-v1|'+json));
