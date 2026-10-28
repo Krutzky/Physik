@@ -517,7 +517,7 @@ var OBS2=[
 ];
 var QMORE={q:'Halte den Stab über die Schnipsel. Stelle einmal 4 und einmal 12 Reibzüge ein. Schau auf die Zählung. Was stellst du fest?',o:['Je öfter man reibt, desto mehr Schnipsel werden angezogen.','Die Zahl der Reibzüge ist egal.','Je öfter man reibt, desto weniger Schnipsel werden angezogen.'],a:0,
   ok:'Genau! Je öfter man reibt, desto stärker wird der Stab geladen.',bad:['','Vergleiche die Zählung bei 4 und bei 12 Reibzügen.','Vergleiche die Zählung bei 4 und bei 12 Reibzügen.']};
-var QWHY2={q:'Was zeigen die Versuche mit den Papierschnipseln?',o:['Durch Reiben werden Gegenstände elektrisch geladen. Geladene Gegenstände ziehen leichte Gegenstände an.','Durch Reiben werden Gegenstände magnetisch.','Die Schnipsel kleben am Stab, weil er warm geworden ist.'],a:0,
+var QWHY2={q:'Was zeigen die Versuche mit den Papierschnipseln?',o:['Durch Reiben wird der Stab elektrisch geladen. Geladene Gegenstände ziehen leichte Gegenstände an.','Durch Reiben werden Gegenstände magnetisch.','Die Schnipsel kleben am Stab, weil er warm geworden ist.'],a:0,
   ok:'Richtig! Man sagt: Der Stab ist elektrisch geladen. Geladene Gegenstände ziehen leichte Gegenstände an.',bad:['','Papier ist nicht magnetisch. Ein Magnet zieht keine Papierschnipsel an!','Die Schnipsel springen schon, bevor sie den Stab berühren. Wärme kann das nicht sein.']};
 function r2(){var s=st.s2;
   var obs='<div class="stack"><p class="eyebrow">Teil A · Versuch im Modell</p><p>Wähle Stab und Tuch im Steuerpult. Stelle ein, wie oft gerieben wird, und halte den Stab <b>über die Schnipsel</b>.</p>'+segQHTML(OBS2,s.obs,s.obsOk)+
@@ -525,7 +525,7 @@ function r2(){var s=st.s2;
   var more=s.obsOk?'<div class="stack"><p class="eyebrow">Teil B · Je – desto</p>'+mcHTML('more',QMORE.q,QMORE.o,s.more,QMORE.a)+'</div>':'';
   var why=s.moreOk?mcHTML('why2',QWHY2.q,QWHY2.o,s.why,QWHY2.a):'';
   $('task').innerHTML='<div><p class="eyebrow">Station 2 · Papierschnipsel</p><h2>Was kann ein geriebener Stab?</h2></div>'+obs+more+why+
-    (st.done[1]?'<p class="win"><b>Super!</b> Geriebene Gegenstände sind <b>elektrisch geladen</b>. Sie ziehen leichte Gegenstände an.</p>':'')+'<div class="row">'+nextBtn(1)+'</div>';
+    (st.done[1]?'<p class="win"><b>Super!</b> Der geriebene Stab ist <b>elektrisch geladen</b>. Er zieht leichte Gegenstände an.</p>':'')+'<div class="row">'+nextBtn(1)+'</div>';
   bindSegQ(s.obs,function(){return s.obsOk;});
   if(!s.obsOk)$('c2').addEventListener('click',function(){if(checkSegQ(OBS2,s.obs,'s2obs','fb2',r2)){s.obsOk=true;save();r2();}});
   else helpMsg('fb2','Gut beobachtet! Nur geriebene Stäbe ziehen die Schnipsel an.');
@@ -564,7 +564,7 @@ function r3(){var s=st.s3;
 
 /* ---------- Station 4: Merksatz ---------- */
 var GAPS=[
-  {pre:'Wenn man zwei verschiedene Gegenstände aneinander reibt, werden sie elektrisch ',post:'.',o:['geladen','magnetisch','warm'],a:0},
+  {pre:'Reibt man zwei Gegenstände aus verschiedenen Stoffen aneinander, zum Beispiel Kunststoff und Wolle, können sie elektrisch ',post:' werden.',o:['geladen','magnetisch','warm'],a:0},
   {pre:'Elektrisch geladene Gegenstände ',post:' leichte Gegenstände wie Papierschnipsel an.',o:['ziehen','kleben','drücken'],a:0},
   {pre:'Mit einer ',post:' kann man nachweisen, ob ein Gegenstand elektrisch geladen ist.',o:['Glimmlampe','Lupe','Kompass'],a:0},
   {pre:'Es gibt ',post:' Arten von Ladung: positive (+) und negative (–) Ladung.',o:['zwei','drei','eine'],a:0},
