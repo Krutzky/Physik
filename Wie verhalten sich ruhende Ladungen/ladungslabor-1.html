@@ -1,655 +1,775 @@
 <!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>body{margin:0}[hidden]{display:none!important}</style>
-<title>Ladungslabor</title>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ladungslabor 1</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
-/* Layout: eine Lernspur – Kopfleiste mit Phasen-Fortschritt, darunter genau eine Station pro Bildschirm */
+/* Layout wie „Optik-Werkstatt“: Kopfleiste mit Stationen-Weg · links Modell mit zwei Ansichten (fest) · rechts Steuerpult + Stationsaufgabe. */
 :root{
-  --bg:#EEF2F7; --surface:#FFFFFF; --sunk:#E3E9F1; --ink:#152036; --muted:#566079; --line:#CDD5E1;
-  --glow:#EE5F12; --glow-soft:#FFE3CF; --neg:#2563C9; --neg-soft:#DCE7FA; --pos:#C93030; --pos-soft:#F8DEDE;
-  --ok:#23804F; --ok-soft:#D9F0E3; --warn:#A86A00; --warn-soft:#FBEBCB;
-  --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
-  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --bg:#EEF1F6; --surface:#FFFFFF; --surface-2:#F3F5FA; --ink:#0B1442; --ink-soft:#4E5677; --line:#CBD3E1;
+  --navy:#020C45; --navy-ink:#FFFFFF; --accent:#E8892B; --accent-ink:#1B1300; --blue:#1C66C0; --blue-soft:#DCE8F7; --on-blue:#FFFFFF;
+  --ok:#22865A; --ok-soft:#DDF2E7; --bad:#C8423D; --bad-soft:#F9E1DF; --pro:#6B3FB0; --pro-soft:#ECE4F8;
+  --grid:#E3E8F0; --axis:#4A5068; --rail:#5B6278; --lens:#9CC3F0; --lens-edge:#3A6AA8; --ray1:#E8892B; --ray2:#1C66C0; --red:#E8432E;
+  --room:#14161D; --display:#111111; --display-ink:#FFC94D;
+  --f-display:"Lexend","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",Calibri,system-ui,sans-serif;
+  --f-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   --r:14px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0E131D; --surface:#171F2E; --sunk:#111826; --ink:#E7ECF4; --muted:#9BA6BC; --line:#2A3549;
-  --glow:#FF8A3D; --glow-soft:#3A2414; --neg:#6C9DF0; --neg-soft:#1A2A47; --pos:#F07171; --pos-soft:#3D1D22;
-  --ok:#5BC48A; --ok-soft:#15301F; --warn:#E5AE45; --warn-soft:#352914; color-scheme:dark }}
+  --bg:#060B26; --surface:#0E1640; --surface-2:#141D4F; --ink:#EEF1FA; --ink-soft:#A9B1D3; --line:#2B3672;
+  --navy:#020722; --navy-ink:#FFFFFF; --accent:#F3A04F; --accent-ink:#1B1300; --blue:#6FA8F0; --blue-soft:#1A2A63; --on-blue:#06102E;
+  --ok:#4CC48A; --ok-soft:#123A2C; --bad:#F07A73; --bad-soft:#40181C; --pro:#B89AF0; --pro-soft:#2A1E52;
+  --grid:#1E2858; --axis:#AEB6D8; --rail:#8792C2; --lens:#3D6FB0; --lens-edge:#9CC3F0; --ray1:#F3A04F; --ray2:#6FA8F0; --red:#F2604D;
+  --room:#05060A; --display:#000000; --display-ink:#FFC94D; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0E131D; --surface:#171F2E; --sunk:#111826; --ink:#E7ECF4; --muted:#9BA6BC; --line:#2A3549;
-  --glow:#FF8A3D; --glow-soft:#3A2414; --neg:#6C9DF0; --neg-soft:#1A2A47; --pos:#F07171; --pos-soft:#3D1D22;
-  --ok:#5BC48A; --ok-soft:#15301F; --warn:#E5AE45; --warn-soft:#352914; color-scheme:dark }
+  --bg:#060B26; --surface:#0E1640; --surface-2:#141D4F; --ink:#EEF1FA; --ink-soft:#A9B1D3; --line:#2B3672;
+  --navy:#020722; --navy-ink:#FFFFFF; --accent:#F3A04F; --accent-ink:#1B1300; --blue:#6FA8F0; --blue-soft:#1A2A63; --on-blue:#06102E;
+  --ok:#4CC48A; --ok-soft:#123A2C; --bad:#F07A73; --bad-soft:#40181C; --pro:#B89AF0; --pro-soft:#2A1E52;
+  --grid:#1E2858; --axis:#AEB6D8; --rail:#8792C2; --lens:#3D6FB0; --lens-edge:#9CC3F0; --ray1:#F3A04F; --ray2:#6FA8F0; --red:#F2604D;
+  --room:#05060A; --display:#000000; --display-ink:#FFC94D; color-scheme:dark}
+
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
-.hrow{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.brand{font-family:var(--display);font-weight:800;font-size:1.25rem;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
-.lamp{width:30px;height:14px;border-radius:7px;border:2px solid var(--muted);position:relative;display:inline-block}
-.lamp::before,.lamp::after{content:"";position:absolute;top:2px;width:7px;height:6px;border-radius:2px;background:var(--muted)}
-.lamp::before{left:3px}.lamp::after{right:3px;background:var(--glow);box-shadow:0 0 8px var(--glow)}
-.meta{color:var(--muted);font-size:.85rem;margin-left:auto}
-.progress{max-width:820px;margin:8px auto 0;display:grid;grid-template-columns:repeat(var(--n),1fr);gap:4px}
-.progress button{all:unset;cursor:pointer;height:8px;border-radius:4px;background:var(--sunk)}
-.progress button.done{background:var(--glow);opacity:.45}
-.progress button.cur{background:var(--glow)}
-.progress button:focus-visible{outline:2px solid var(--neg);outline-offset:2px}
-.phase{max-width:820px;margin:6px auto 0;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 120px}
-.step{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
-h1{font-size:clamp(1.7rem,4.5vw,2.4rem);font-weight:800;letter-spacing:-.02em}
-h2{font-size:1.45rem;font-weight:800}
-h3{font-size:1.1rem;font-weight:600}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+header{background:var(--navy);color:var(--navy-ink);padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hwrap{max-width:1360px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.brand{display:flex;flex-direction:column}
+.brand b{font-family:var(--f-display);font-weight:700;font-size:21px;letter-spacing:.2px}
+.brand span{font-size:13px;color:#8DB7EE}
+.route{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.stop{display:flex;align-items:center;gap:8px;border:2px solid #34428F;background:transparent;color:#fff;border-radius:999px;padding:5px 12px 5px 6px;font-size:14px;font-weight:700}
+.stop .n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#24317A;font-size:13px}
+.stop.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stop.on .n{background:rgba(0,0,0,.18);color:var(--accent-ink)}
+.stop.done .n{background:var(--ok);color:#fff}
+.stop.pro{border-style:dashed;border-color:#8E74D6}
+.stop.pro.on{background:#B89AF0;border-color:#B89AF0;color:#1A0F33;border-style:solid}
+.stop:disabled{opacity:.45;cursor:not-allowed}
+.reset{background:transparent;border:1.5px solid #34428F;color:#B9C6EE;border-radius:999px;padding:5px 10px;font-size:13px}
+
+main{max-width:1360px;margin:0 auto;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){main{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.plot{position:sticky;top:env(safe-area-inset-top,0px);padding:10px;display:flex;flex-direction:column;gap:10px}
+@media (max-width:900px){.plot{position:static}}
+canvas{display:block;width:100%;border-radius:10px;touch-action:none}
+.views{display:grid;grid-template-columns:repeat(2,minmax(0,250px));justify-content:center;gap:14px}
+.view{display:flex;flex-direction:column;gap:4px;min-width:0}
+.view canvas{aspect-ratio:1/1;max-width:100%;background:var(--room)}
+.view small{font-size:13px;color:var(--ink-soft);text-align:center}
+.view small b{color:var(--ink)}
+
+.side{display:flex;flex-direction:column;gap:16px;min-width:0}
+h2{font-family:var(--f-display);font-weight:600;font-size:20px;margin:0 0 4px;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:17px;margin:0}
+.eyebrow{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--blue);font-weight:700;margin:0 0 2px}
+.eyebrow.pro{color:var(--pro)}
 p{margin:0}
-.lead{font-size:1.1rem;color:var(--muted)}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
-.q{background:var(--glow-soft);border-radius:var(--r);padding:16px 18px;font-family:var(--display);font-weight:600;font-size:1.25rem}
-.q small{display:block;font-family:var(--body);font-weight:700;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--glow);margin-bottom:4px}
-.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-.scene{border:1px solid var(--line);border-radius:var(--r);padding:14px;background:var(--surface);display:flex;flex-direction:column;gap:8px;cursor:pointer;text-align:left;font:inherit;color:inherit}
-.scene[aria-pressed="true"]{border-color:var(--glow);box-shadow:inset 0 0 0 2px var(--glow)}
-.scene .pic{height:84px;border-radius:10px;background:var(--sunk);display:grid;place-items:center}
-.scene .tag{font-size:.8rem;color:var(--muted)}
-.scene[aria-pressed="true"] .tag{color:var(--glow);font-weight:700}
-label{font-weight:700}
-input[type=text],textarea,select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
-textarea{min-height:90px;resize:vertical}
-input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--neg);outline-offset:2px}
-.row{display:flex;gap:12px;flex-wrap:wrap}
-.row>*{flex:1 1 180px;min-width:0}
-.btn{font:inherit;font-weight:700;border-radius:999px;padding:11px 20px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
-.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
-.btn.glow{background:var(--glow);border-color:var(--glow);color:#fff}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font:inherit;font-size:.95rem;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
-.chip:hover{border-color:var(--glow)}
-.note{border-radius:10px;padding:12px 14px;font-size:.95rem}
-.note.ok{background:var(--ok-soft);color:var(--ink);border-left:4px solid var(--ok)}
-.note.bad{background:var(--warn-soft);color:var(--ink);border-left:4px solid var(--warn)}
-.note.info{background:var(--sunk);border-left:4px solid var(--muted)}
-.safety{background:var(--pos-soft);border-radius:10px;padding:12px 14px;border-left:4px solid var(--pos)}
-.safety b{color:var(--pos)}
-ol.steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
-details{border:1px dashed var(--line);border-radius:10px;padding:10px 14px;background:var(--surface)}
-details summary{cursor:pointer;font-weight:700;color:var(--neg)}
-details[open] summary{margin-bottom:8px}
-.lab{border:1px solid var(--line);border-radius:var(--r);background:var(--sunk);overflow:hidden}
-.lab svg{display:block;width:100%;height:auto;touch-action:none}
-.labbar{display:flex;gap:8px;flex-wrap:wrap;padding:10px;background:var(--surface);border-top:1px solid var(--line);align-items:center}
-.labbar select{width:auto;padding:7px 10px}
-.labbar .count{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted);font-size:.9rem}
-.labmsg{padding:10px 14px;background:var(--surface);border-top:1px solid var(--line);min-height:46px;font-size:.95rem}
-.obs{width:100%;border-collapse:collapse}
-.obs th,.obs td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-.obs th{font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-.tablewrap{overflow-x:auto}
-.seg{display:flex;flex-wrap:wrap;gap:6px}
-.seg input{position:absolute;opacity:0;pointer-events:none}
-.seg label{font-weight:400;font-size:.92rem;border:1.5px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;background:var(--surface)}
-.seg input:checked+label{border-color:var(--glow);background:var(--glow-soft);font-weight:700}
-.seg input:focus-visible+label{outline:3px solid var(--neg)}
-.gap{display:inline-block;width:auto;min-width:9em;padding:4px 8px;margin:2px 2px;border-width:2px}
-.gap.right{border-color:var(--ok);background:var(--ok-soft)}
-.gap.wrong{border-color:var(--warn);background:var(--warn-soft)}
-.sent{line-height:2.3}
-.merk{background:var(--surface);border:2px solid var(--ink);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:10px}
-.merk h3{display:flex;gap:8px;align-items:center}
-.merk ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
-.rule{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-.rule div{border-radius:10px;padding:12px}
-.rule .n{background:var(--neg-soft)} .rule .p{background:var(--pos-soft)}
-.opt{display:flex;flex-direction:column;gap:8px}
-.opt button{font:inherit;text-align:left;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface);color:var(--ink);cursor:pointer}
-.opt button.sel-ok{border-color:var(--ok);background:var(--ok-soft);font-weight:700}
-.opt button.sel-bad{border-color:var(--warn);background:var(--warn-soft)}
-.opt button.show-ok{border-color:var(--ok)}
-.opt button:disabled{cursor:default}
-.ampel{display:flex;gap:6px;flex-wrap:wrap}
-.ampel input{position:absolute;opacity:0;pointer-events:none}
-.ampel label{font-weight:400;font-size:.9rem;border:1.5px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;display:flex;align-items:center;gap:6px}
-.ampel label i{width:12px;height:12px;border-radius:50%;display:inline-block}
-.ampel input:checked+label{font-weight:700;border-color:var(--ink)}
-.ampel input:focus-visible+label{outline:3px solid var(--neg)}
-.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem;word-break:break-all;background:var(--sunk);border-radius:10px;padding:10px;max-height:130px;overflow:auto;user-select:all}
-.sum{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.95rem}
-.sum dt{color:var(--muted)} .sum dd{margin:0;font-weight:700}
-nav.foot{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);z-index:6;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
-nav.foot .in{max-width:820px;margin:0 auto;display:flex;gap:10px;align-items:center}
-nav.foot .in .grow{flex:1}
-.words{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:7}
-.words>button{font:inherit;font-weight:700;font-size:.9rem;border-radius:999px;padding:8px 14px;border:1.5px solid var(--ink);background:var(--surface);color:var(--ink);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.12)}
-.wpanel{position:absolute;right:0;bottom:48px;width:min(330px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.18);font-size:.92rem;max-height:60vh;overflow:auto}
-.wpanel dl{margin:0;display:grid;gap:6px}
-.wpanel dt{font-weight:700} .wpanel dd{margin:0 0 4px;color:var(--muted)}
-@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+.stack{display:flex;flex-direction:column;gap:12px}
+.muted{color:var(--ink-soft);font-size:15px}
+
+/* Steuerpult */
+.ctl{display:flex;flex-direction:column;gap:6px}
+.lift{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:stretch}
+.disp{background:var(--display);color:var(--display-ink);font-family:var(--f-mono);border-radius:12px;padding:6px 10px;text-align:center;box-shadow:inset 0 0 0 3px #333;display:flex;flex-direction:column;justify-content:center}
+.disp small{font-size:11px;letter-spacing:2px;color:#9a9a9a}
+.disp span{font-size:28px;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.disp.g{color:#9FD0FF}
+.keys{display:flex;gap:8px;align-items:center}
+.key{width:56px;height:52px;border-radius:12px;border:2px solid var(--line);background:var(--surface-2);font-size:22px;font-weight:700}
+.key:active{background:var(--accent);color:var(--accent-ink)}
+input[type=range]{width:100%;accent-color:var(--accent);height:30px}
+input[type=range].gr{accent-color:var(--blue)}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.locked{font-size:15px;color:var(--ink-soft);background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.chk{display:flex;align-items:center;gap:10px;font-size:15px}
+.chk input{width:20px;height:20px;accent-color:var(--blue)}
+.sep{border:0;border-top:1.5px dashed var(--line);margin:8px 0}
+
+.num{width:4.6em;text-align:center;border:2px solid var(--line);border-radius:8px;padding:5px 2px;background:var(--surface);font-variant-numeric:tabular-nums}
+.num.ok{border-color:var(--ok);background:var(--ok-soft)}
+.num.bad{border-color:var(--bad);background:var(--bad-soft)}
+.sel{font:inherit;border:2px solid var(--line);border-radius:8px;padding:4px 4px;background:var(--surface);max-width:100%}
+.sel.ok{border-color:var(--ok);background:var(--ok-soft)}
+.sel.bad{border-color:var(--bad);background:var(--bad-soft)}
+.btn{border:none;border-radius:999px;padding:10px 18px;font-weight:700;font-size:16px}
+.btn.pri{background:var(--accent);color:var(--accent-ink)}
+.btn.sec{background:var(--surface);border:1.5px solid var(--line)}
+.btn.sm{padding:6px 12px;font-size:14px}
+.btn.tip{background:transparent;border:1.5px dashed var(--blue);color:var(--blue);padding:7px 14px;font-size:15px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.choice{display:flex;flex-direction:column;gap:8px}
+.choice.grid2{display:grid;grid-template-columns:1fr 1fr}
+@media (max-width:440px){.choice.grid2{grid-template-columns:1fr}}
+.opt{text-align:left;border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px}
+.opt b{font-family:var(--f-display)}
+.opt.sel{border-color:var(--blue);background:var(--blue-soft)}
+.opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft)}
+.gopt{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center}
+.gopt .L{width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-weight:700;font-family:var(--f-display);grid-row:1/3}
+.gopt span{font-size:15px}
+.seg{display:inline-flex;flex-wrap:wrap;border:2px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border:none;background:var(--surface);padding:7px 14px;font-weight:700}
+.seg button.sel{background:var(--blue);color:var(--on-blue)}
+.seg button.ok{background:var(--ok);color:#fff}
+.seg button.bad{background:var(--bad);color:#fff}
+.fb{font-weight:700;min-height:1.4em}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)}
+.note{border-left:4px solid var(--accent);background:var(--surface-2);padding:10px 12px;border-radius:0 10px 10px 0;font-size:15px}
+.hint{border:1.5px dashed var(--blue);background:var(--blue-soft);border-radius:10px;padding:10px 12px;font-size:15px}
+.win{border:2px solid var(--ok);background:var(--ok-soft);border-radius:12px;padding:12px}
+.guess{border:2px solid var(--pro);background:var(--pro-soft);border-radius:12px;padding:12px}
+.q{display:flex;flex-direction:column;gap:6px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}
+.q p b{font-family:var(--f-display);font-weight:600}
+.gap ol{padding-left:1.2em;margin:0}
+.gap li{margin-bottom:10px}
+.dots{display:flex;gap:6px}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);display:block}
+.dots i.on{background:var(--ok);border-color:var(--ok)}
+.merk{border:2px solid var(--blue);border-radius:12px;padding:14px;background:var(--surface)}
+.merk h3{color:var(--blue);margin-bottom:6px}
+.merk .k{color:var(--blue);font-weight:700}
+textarea.free{width:100%;border:2px solid var(--line);border-radius:10px;padding:8px;background:var(--surface);color:var(--ink)}
+.bz{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center}
+.badge{width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-weight:700;font-family:var(--f-display)}
+.tw{overflow-x:auto}
+table.mt{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:15.5px}
+table.mt th,table.mt td{border:1.5px solid var(--line);padding:6px 6px;text-align:center}
+table.mt th{background:var(--surface-2);font-weight:700}
+table.mt th small{display:block;font-weight:400;color:var(--ink-soft);font-size:12px}
+table.mt tr.cur td{background:var(--blue-soft)}
+table.mt tr.done td{background:var(--ok-soft)}
+table.mt tr.lock td{color:var(--ink-soft)}
+table.mt td.v b{font-size:16px}
+.chart{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:6px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--ink-soft);padding:0 6px 4px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* ---- Ergebnisse abgeben ---- */
+.abg-btn{background:var(--accent);color:var(--accent-ink);border:none;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700}
+.abg-ov{position:fixed;inset:0;background:rgba(2,8,40,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto;z-index:50}
+.abg-box{background:var(--surface);color:var(--ink);border-radius:16px;max-width:560px;width:100%;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.abg-box h2{margin:0}
+.abg-box ol{margin:0;padding-left:1.3em}
+.abg-box li{margin-bottom:6px}
+.abg-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.abg-in{border:2px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface);color:var(--ink);font:inherit}
+.abg-copy{background:var(--accent);color:var(--accent-ink);border:none;border-radius:999px;padding:12px 22px;font-weight:700;font-size:18px}
+.abg-close{background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:700;color:var(--ink)}
+.abg-fb{font-weight:700;min-height:1.4em}
+.abg-fb.ok{color:var(--ok)} .abg-fb.bad{color:var(--bad)}
+.abg-txt{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;border:2px solid var(--line);border-radius:10px;padding:8px;background:var(--surface-2);color:var(--ink)}
+</style>
+<style>
+.ctlrow{display:flex;flex-direction:column;gap:4px}
+.ctlrow > span{font-size:13px;color:var(--ink-soft);font-weight:700;letter-spacing:.5px}
+.seg.full{display:flex}
+.seg.full button{flex:1}
+.status{font-weight:700;border-radius:10px;padding:8px 12px;font-size:15px;text-align:center}
+.status.ok{background:var(--ok-soft);color:var(--ok)} .status.bad{background:var(--bad-soft);color:var(--bad)} .status.info{background:var(--surface-2);color:var(--ink-soft)}
+.patient{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface-2)}
+.patient .av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-family:var(--f-display);color:#fff;grid-row:1/3}
+.pic{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.pic svg{width:100%;max-width:84px;height:auto}
+.choice.grid4{display:grid;grid-template-columns:repeat(4,1fr)}
+@media (max-width:440px){.choice.grid4{grid-template-columns:1fr 1fr}}
+
+/* ---- Start-Dialog ---- */
+.abg-ov{position:fixed;inset:0;background:rgba(2,8,40,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto;z-index:50}
+.abg-box{background:var(--surface);color:var(--ink);border-radius:16px;max-width:560px;width:100%;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.abg-box h2{margin:0}
+.abg-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.abg-in{border:2px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface);color:var(--ink);font:inherit}
+.abg-copy{background:var(--accent);color:var(--accent-ink);border:none;border-radius:999px;padding:12px 22px;font-weight:700;font-size:18px}
+.abg-fb{font-weight:700;min-height:1.4em}
+.abg-fb.ok{color:var(--ok)} .abg-fb.bad{color:var(--bad)}
 </style>
 </head>
 <body>
 <header>
-  <div class="hrow">
-    <div class="brand"><span class="lamp" aria-hidden="true"></span>Ladungslabor</div>
-    <div class="meta" id="who">Wie verhalten sich ruhende Ladungen? · Stunde 1</div>
+  <div class="hwrap">
+    <div class="brand"><b>Ladungslabor 1</b><span>Was passiert beim Reiben?</span></div>
+    <nav class="route" id="route" aria-label="Stationen"></nav>
+    <button class="abg-btn" id="abgBtn" type="button">Ergebnisse abgeben</button><button class="reset" id="reset" type="button">Neu starten</button>
   </div>
-  <div class="progress" id="prog" aria-label="Fortschritt"></div>
-  <div class="phase" id="phase"></div>
 </header>
-
-<main><div id="app"></div></main>
-
-<div class="words">
-  <button id="wbtn" aria-expanded="false" aria-controls="wpanel">Wortspeicher</button>
-  <div class="wpanel" id="wpanel" hidden>
-    <dl>
-      <dt>reiben</dt><dd>zwei Gegenstände fest aneinander hin- und herbewegen</dd>
-      <dt>elektrisch geladen</dt><dd>Ein Gegenstand hat nach dem Reiben eine elektrische Ladung.</dd>
-      <dt>die Ladung</dt><dd>Es gibt positive Ladung (+) und negative Ladung (–).</dd>
-      <dt>anziehen</dt><dd>Etwas wird zu einem Gegenstand hingezogen.</dd>
-      <dt>die Glimmlampe</dt><dd>Nachweisgerät: Sie leuchtet kurz auf, wenn ein Gegenstand geladen ist.</dd>
-      <dt>nachweisen</dt><dd>zeigen, dass etwas wirklich da ist</dd>
-      <dt>entgegengesetzt</dt><dd>das Gegenteil: + und –</dd>
-    </dl>
-    <p style="margin-top:10px;color:var(--muted)">Satzanfänge: „Ich beobachte, dass …“ · „Ich vermute, dass …, weil …“ · „Daraus folgt, dass …“</p>
-  </div>
-</div>
-
-<nav class="foot"><div class="in">
-  <button class="btn" id="back">Zurück</button>
-  <span class="grow"></span>
-  <button class="btn primary" id="next">Weiter</button>
-</div></nav>
-
+<main>
+  <section class="card plot" aria-label="Modell">
+    <canvas id="cv" aria-label="Modell: Luftballon, Stab mit Papierschnipseln oder Glimmlampe"></canvas>
+    <div class="views">
+      <div class="view"><canvas id="cvA"></canvas><small id="capA"></small></div>
+      <div class="view"><canvas id="cvB"></canvas><small id="capB"></small></div>
+    </div>
+  </section>
+  <aside class="side">
+    <section class="card" id="ctlCard"><p class="eyebrow">Steuerpult</p><div id="ctl" class="ctl"></div></section>
+    <section class="card stack" id="task"></section>
+  </aside>
+</main>
 <script>
 (function(){
-"use strict";
-const KEY="ladungslabor_s1_v1";
-const STEPS=[
- {id:"start",phase:"Start"},
- {id:"phaen",phase:"Problemstellung entdecken"},
- {id:"vermut",phase:"Vorstellungen entwickeln"},
- {id:"v1",phase:"Lernmaterial bearbeiten · Versuch 1"},
- {id:"v2",phase:"Lernmaterial bearbeiten · Versuch 2"},
- {id:"folger",phase:"Lernprodukt diskutieren"},
- {id:"lueck",phase:"Lernzuwachs definieren"},
- {id:"merk",phase:"Lernzuwachs definieren · Merksätze"},
- {id:"quiz",phase:"Vernetzen und transferieren"},
- {id:"exit",phase:"Exit-Ticket"},
- {id:"abgabe",phase:"Abgabe"}
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var APP='Ladungslabor 1';
+var STATIONS=[
+  {key:'s1',name:'Luftballon',scene:'balloon'},
+  {key:'s2',name:'Papierschnipsel',scene:'snip'},
+  {key:'s3',name:'Glimmlampe',scene:'lamp'},
+  {key:'s4',name:'Merksatz',scene:'lamp'},
+  {key:'s5',name:'Profi-Zusatz',pro:true,scene:'snip'}
 ];
-const blank=()=>({v:1,app:"Ladungslabor S1",name:"",klasse:"",gruppe:"",start:new Date().toISOString(),end:null,
-  step:0,visited:[0],kennt:[],vermutung:"",vermutStart:"",v1:{},v2:{},sim:false,folger:null,folgerTries:0,
-  lt:{tries:0,first:null,last:null,shown:false},quiz:{},exit:{a:[null,null,null],frage:""}});
-let S=blank();
-try{const raw=localStorage.getItem(KEY); if(raw){const o=JSON.parse(raw); if(o&&o.v===1) S=Object.assign(blank(),o);}}catch(e){}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
-const $=s=>document.querySelector(s);
-const app=$("#app");
-const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+var st={station:0,done:[false,false,false,false,false],guess:null,
+  s1:{obs:{},obsOk:false,verm:'',ok:false},
+  s2:{obs:{},obsOk:false,more:null,moreOk:false,why:null,whyOk:false},
+  s3:{obs:{},obsOk:false,why:null,whyOk:false,app:null,appOk:false},
+  s4:{gaps:{},ok:false,refl:'',pulli:null,pulliOk:false},
+  s5:{},res:{},tries:{},help:{},t0:null,log:[]};
 
-/* ---------- Wortspeicher ---------- */
-$("#wbtn").onclick=()=>{const p=$("#wpanel");p.hidden=!p.hidden;$("#wbtn").setAttribute("aria-expanded",String(!p.hidden));};
+/* ---------- Speicher ---------- */
+var KEY='ladungslabor-1-v1',RKEY='ladungslabor-1-resets';
+function save(){try{localStorage.setItem(KEY,JSON.stringify({station:st.station,done:st.done,guess:st.guess,s1:st.s1,s2:st.s2,s3:st.s3,s4:st.s4,s5:st.s5,res:st.res,tries:st.tries,help:st.help,t0:st.t0,log:st.log}));}catch(e){}}
+function load(){try{var x=JSON.parse(localStorage.getItem(KEY)||'null');if(!x)return;
+  st.station=x.station||0;if(x.done)st.done=x.done;while(st.done.length<5)st.done.push(false);st.guess=x.guess||null;
+  ['s1','s2','s3','s4','s5'].forEach(function(k){if(x[k])st[k]=Object.assign(st[k],x[k]);});
+  if(x.res)st.res=x.res;if(x.tries)st.tries=x.tries;if(x.help)st.help=x.help;if(x.t0)st.t0=x.t0;if(x.log)st.log=x.log;}catch(e){}}
+function tryInc(k,ok,val){var t=st.tries[k]||(st.tries[k]={n:0,ok:false,first:null});if(t.ok)return;t.n++;if(t.first===null)t.first=!!ok;if(ok)t.ok=true;else if(val!=null&&val!==''){t.w=t.w||[];if(t.w.length<12)t.w.push(val);}save();}
+function stuck(k){var t=st.tries[k];return !!(t&&!t.ok&&t.n>=3);}
+function showHelp(fb,k,fn){if(!fb||!stuck(k))return;var id='hb_'+k;if(document.getElementById(id))return;var b=document.createElement('button');b.type='button';b.id=id;b.className='btn tip';b.style.marginTop='6px';b.textContent='Ich komme nicht weiter: Lösung zeigen';
+  b.addEventListener('click',function(){st.help[k]=true;save();fn();});var wrap=document.createElement('div');wrap.className='row';wrap.appendChild(b);(fb.parentNode.classList&&fb.parentNode.classList.contains('row')?fb.parentNode:fb).insertAdjacentElement('afterend',wrap);}
+function helpMsg(id,t){var f=$(id);if(f){f.className='fb ok';f.textContent=t;}}
+function fnv(str){var h=0x811c9dc5;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return ('0000000'+h.toString(16)).slice(-8);}
+function resets(){try{return +(localStorage.getItem(RKEY)||0);}catch(e){return 0;}}
+function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
 
-/* ---------- Fortschritt ---------- */
-const prog=$("#prog"); prog.style.setProperty("--n",STEPS.length);
-function drawProg(){
-  prog.innerHTML=STEPS.map((s,i)=>`<button aria-label="Schritt ${i+1}: ${esc(s.phase)}" class="${i===S.step?"cur":(S.visited.includes(i)?"done":"")}" data-i="${i}" ${S.visited.includes(i)?"":"disabled"}></button>`).join("");
-  prog.querySelectorAll("button").forEach(b=>b.onclick=()=>{if(!b.disabled)go(+b.dataset.i)});
-  $("#phase").textContent=`Schritt ${S.step+1} von ${STEPS.length} · ${STEPS[S.step].phase}`;
-  $("#who").textContent=S.name?`${S.name}${S.gruppe?" · Gruppe "+S.gruppe:""}`:"Wie verhalten sich ruhende Ladungen? · Stunde 1";
-  $("#back").disabled=S.step===0;
-  $("#next").textContent=S.step===STEPS.length-1?"Fertig":"Weiter";
-  $("#next").hidden=S.step===STEPS.length-1;
+/* ---------- Modell (nicht gespeichert) ----------
+   Vorzeichen nach dem Reiben: Kunststoff (mit Wolle oder Seide) negativ, Glas positiv; das Tuch jeweils entgegengesetzt.
+   Gummi-Luftballon an Haaren: Ballon negativ, Haare positiv. */
+var M={};
+function freshModel(){
+  M={bal:{x:430,y:140,str:0,pos:'hand',fall:false,wig:0,tag:''},
+     rod:{kind:'kunststoff',cloth:'wolle',str:0,y:90,ty:90,x:0,tx:0,hold:'up',obj:'stab',rub:0,rubX:0},
+     snips:[],glow:{side:null,t:0},tag:'',lastLamp:''};
+  for(var i=0;i<16;i++){M.snips.push({x:168+i*19+(i%3)*4,y:314-(i%2)*3,w:9+(i%3)*3,rot:((i*37)%30-15),p:0,on:false,lag:(i%5)*0.07});}
 }
-function go(i){
-  if(i<0||i>=STEPS.length) return;
-  S.step=i; if(!S.visited.includes(i)) S.visited.push(i); save(); render(); window.scrollTo({top:0});
-}
-$("#back").onclick=()=>go(S.step-1);
-$("#next").onclick=()=>{
-  const id=STEPS[S.step].id;
-  if(id==="start"&&!S.name.trim()){const n=$("#nm");n.focus();$("#startmsg").hidden=false;return;}
-  go(S.step+1);
-};
+freshModel();
+function strength(str){return Math.max(0,Math.min(1,(str-2)/8));}
+function rodSign(){if(M.rod.str<3)return 0;var s=M.rod.kind==='kunststoff'?-1:1;return M.rod.obj==='tuch'?-s:s;}
+function nLift(){var s=strength(M.rod.str);return s<=0?0:Math.max(2,Math.round(s*M.snips.length));}
+function rodName(){return (M.rod.kind==='kunststoff'?'Kunststoffstab':'Glasstab');}
+function clothName(){return (M.rod.cloth==='wolle'?'Wolltuch':'Seidentuch');}
 
-/* ---------- Simulation (Stab, Tuch, Schnipsel, Glimmlampe) ---------- */
-// Vorzeichen nach Reiben: Kunststoff mit Wolle/Seide -> negativ; Glas mit Seide/Wolle -> positiv; Tuch jeweils entgegengesetzt
-function makeLab(host,mode){
-  const st={rod:"kunststoff",cloth:"wolle",strokes:0,obj:"stab",glowTimer:null,stuck:false};
-  host.innerHTML=`
-  <div class="lab">
-    <svg viewBox="0 0 600 270" role="img" aria-label="Simulation: Stab reiben und testen">
-      <rect x="0" y="0" width="600" height="270" fill="var(--sunk)"/>
-      <g id="lampG" ${mode==="lamp"?"":"display=none"}>
-        <rect x="40" y="62" width="120" height="36" rx="18" fill="var(--surface)" stroke="var(--muted)" stroke-width="2.5"/>
-        <rect id="eL" x="58" y="74" width="30" height="12" rx="3" fill="var(--muted)"/>
-        <rect id="eR" x="112" y="74" width="30" height="12" rx="3" fill="var(--muted)"/>
-        <ellipse id="hand" cx="22" cy="80" rx="22" ry="30" fill="#E9B98F" stroke="#B9865C" stroke-width="2"/>
-        <text x="22" y="128" text-anchor="middle" font-size="13" fill="var(--muted)" font-family="var(--body)">Hand</text>
-        <text x="100" y="52" text-anchor="middle" font-size="13" fill="var(--muted)" font-family="var(--body)">Glimmlampe</text>
-      </g>
-      <g id="objG">
-        <g id="rodG">
-          <rect id="rod" x="170" y="68" width="330" height="24" rx="12" fill="#7A8699"/>
-          <rect x="500" y="62" width="70" height="36" rx="10" fill="#4B5568"/>
-          <text x="535" y="118" text-anchor="middle" font-size="13" fill="var(--muted)" font-family="var(--body)">Griff</text>
-        </g>
-        <g id="clothTest" display="none">
-          <path d="M170 60 q40 -14 80 0 t80 0 v44 q-40 14 -80 0 t-80 0 z" id="clothShape2" fill="#B45F3C"/>
-        </g>
-      </g>
-      <g id="cloth" style="transition:transform .18s ease">
-        <path id="clothShape" d="M0 56 q20 -10 40 0 t40 0 v48 q-20 10 -40 0 t-40 0 z" fill="#B45F3C" opacity=".95" transform="translate(190 0)"/>
-      </g>
-      <g id="snips" ${mode==="snip"?"":"display=none"}>
-        <rect x="150" y="236" width="380" height="10" rx="4" fill="var(--line)"/>
-      </g>
-      <text id="hint" x="300" y="170" text-anchor="middle" font-size="15" fill="var(--muted)" font-family="var(--body)">Tuch am Stab hin- und herziehen oder „Reiben“ drücken</text>
-    </svg>
-    <div class="labbar">
-      <select id="selRod" aria-label="Stab"><option value="kunststoff">Kunststoffstab</option><option value="glas">Glasstab</option></select>
-      <select id="selCloth" aria-label="Tuch"><option value="wolle">Wolltuch</option><option value="seide">Seidentuch</option></select>
-      <button class="btn" id="bRub">Reiben</button>
-      ${mode==="snip"?'<button class="btn glow" id="bTest">Über die Schnipsel halten</button>':'<select id="selObj" aria-label="Was testen?"><option value="stab">Stab testen</option><option value="tuch">Tuch testen</option></select><button class="btn glow" id="bTest">Glimmlampe dranhalten</button>'}
-      <button class="btn" id="bReset">Neu</button>
-      <span class="count" id="cnt">Reibzüge: 0</span>
-    </div>
-    <div class="labmsg" id="msg" aria-live="polite">Wähle Stab und Tuch. Reibe dann mindestens 5-mal.</div>
-  </div>`;
-  const q=s=>host.querySelector(s);
-  const svg=q("svg"), cloth=q("#cloth"), msg=q("#msg");
-  const clothColor={wolle:"#B45F3C",seide:"#C9B8E8"};
-  const rodColor={kunststoff:"#5A6578",glas:"#9FD3E0"};
-  const snipG=q("#snips"); const snips=[];
-  if(mode==="snip"){
-    for(let i=0;i<14;i++){
-      const r=document.createElementNS("http://www.w3.org/2000/svg","rect");
-      const x=170+i*24+(i%3)*3, y=226-(i%2)*3;
-      r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",12+(i%3)*3);r.setAttribute("height",8);
-      r.setAttribute("rx",1.5);r.setAttribute("fill",i%2?"#F6F1E4":"#FFFFFF");r.setAttribute("stroke","#9AA3B2");
-      r.style.transition="transform .45s cubic-bezier(.3,1.4,.6,1)";r.style.transformBox="fill-box";r.style.transformOrigin="center";
-      snipG.appendChild(r); snips.push({el:r,x,y});
-    }
-  }
-  function sign(){ // Vorzeichen des getesteten Objekts
-    if(st.strokes<3) return 0;
-    const rodSign=st.rod==="kunststoff"?-1:1;
-    return st.obj==="tuch"?-rodSign:rodSign;
-  }
-  function paint(){
-    q("#rod").setAttribute("fill",rodColor[st.rod]);
-    q("#clothShape").setAttribute("fill",clothColor[st.cloth]);
-    q("#clothShape2").setAttribute("fill",clothColor[st.cloth]);
-    q("#cnt").textContent="Reibzüge: "+st.strokes;
-    const testingCloth=st.obj==="tuch";
-    q("#rodG").setAttribute("display",testingCloth?"none":"inline");
-    q("#clothTest").setAttribute("display",testingCloth?"inline":"none");
-    cloth.style.display=testingCloth?"none":"";
-  }
-  let dir=1,pos=190;
-  function rubOnce(){
-    if(st.obj==="tuch"){st.obj="stab"; const so=q("#selObj"); if(so) so.value="stab";}
-    pos = dir>0?380:190; dir=-dir;
-    cloth.style.transform=`translateX(${pos-190}px)`;
-    st.strokes++; q("#hint").textContent=""; paint(); resetSnips();
-    if(st.strokes===5) msg.textContent="Gut gerieben! Teste jetzt den Stab.";
-  }
-  q("#bRub").onclick=rubOnce;
-  // Ziehen mit Finger / Maus
-  let dragging=false,lastX=0,moved=0,lastDir=0;
-  svg.addEventListener("pointerdown",e=>{dragging=true;lastX=e.clientX;moved=0;lastDir=0;try{svg.setPointerCapture(e.pointerId)}catch(_){}});
-  svg.addEventListener("pointermove",e=>{
-    if(!dragging||st.obj==="tuch")return;
-    const dx=e.clientX-lastX; lastX=e.clientX;
-    const box=svg.getBoundingClientRect(); const scale=600/box.width;
-    pos=Math.max(170,Math.min(420,pos+dx*scale)); cloth.style.transition="none";
-    cloth.style.transform=`translateX(${pos-190}px)`;
-    const d=Math.sign(dx); moved+=Math.abs(dx*scale);
-    if(d&&d!==lastDir&&moved>60){st.strokes++;moved=0;q("#hint").textContent="";paint();resetSnips();if(st.strokes===5)msg.textContent="Gut gerieben! Teste jetzt den Stab.";}
-    if(d) lastDir=d;
+/* ---------- Zeichnen ---------- */
+function col(n){return getComputedStyle(document.documentElement).getPropertyValue('--'+n).trim();}
+function ff(){return getComputedStyle(document.body).fontFamily;}
+var cv=$('cv'),ctx=cv.getContext('2d'),W=0,H=0,ORDER=[7,3,11,0,14,5,9,1,12,6,15,2,10,4,13,8];
+function resize(){var w=cv.getBoundingClientRect().width||640,h=Math.round(Math.max(260,Math.min(w*0.58,430))),dpr=window.devicePixelRatio||1;
+  cv.style.height=h+'px';cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);W=w;H=h;sizeView($('cvA'));sizeView($('cvB'));draw();}
+function sizeView(c){var w=c.getBoundingClientRect().width||220,dpr=window.devicePixelRatio||1;c.width=Math.round(w*dpr);c.height=Math.round(w*dpr);}
+function scene(){return STATIONS[st.station].scene;}
+function darkScene(){return scene()==='lamp';}
+function bg(){return darkScene()?'#141826':col('surface');}
+function tag(c,t,x,y,color,align){c.font='bold 13px '+ff();c.textBaseline='middle';c.textAlign=align||'center';var w=c.measureText(t).width,x0=align==='left'?x:align==='right'?x-w:x-w/2;
+  c.fillStyle=darkScene()?'#1E2438':col('surface');c.globalAlpha=.94;c.fillRect(x0-5,y-11,w+10,22);c.globalAlpha=1;c.fillStyle=color;c.fillText(t,x,y);}
+function draw(){if(!W)return;
+  ctx.fillStyle=bg();ctx.fillRect(0,0,W,H);
+  var k=Math.min(W/640,H/372);ctx.save();ctx.translate((W-640*k)/2,(H-372*k)/2);ctx.scale(k,k);paint(ctx,false);ctx.restore();
+  ctx.font='11px '+ff();ctx.fillStyle=darkScene()?'#8E97B8':col('ink-soft');ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText('Modell, nicht maßstäblich',W-8,H-6);
+  drawViews();updStatus();}
+function paint(c,lupe){var sc=scene();if(sc==='balloon')drawBalloon(c,lupe);else if(sc==='snip')drawSnip(c,lupe);else drawLamp(c,lupe);}
+function paper(x,w,colr){x.setTransform(1,0,0,1,0,0);x.fillStyle=colr||'#FFF3D6';x.fillRect(0,0,w,w);}
+function zoom(cnv,f,back){var x=cnv.getContext('2d'),w=cnv.width;paper(x,w,back);x.save();x.translate(w/2,w/2);x.scale(w/f.s,w/f.s);x.translate(-f.x,-f.y);paint(x,true);x.restore();
+  x.strokeStyle='rgba(58,106,168,.6)';x.lineWidth=w*0.02;x.beginPath();x.arc(w/2,w/2,w*0.47,0,Math.PI*2);x.stroke();}
+function vtext(x,w,lines){var y=w*0.1;lines.forEach(function(l){x.font=(l.b?'bold ':'')+Math.round(w*(l.s||0.075))+'px '+ff();x.fillStyle=l.c||'#1A1F36';x.textAlign=l.a||'left';x.textBaseline='top';
+  var words=String(l.t).split(' '),line='',maxw=w*0.84,xx=l.a==='center'?w/2:w*0.08;words.forEach(function(wd){var t=line?line+' '+wd:wd;if(x.measureText(t).width>maxw&&line){x.fillText(line,xx,y);y+=w*(l.s||0.075)*1.25;line=wd;}else line=t;});x.fillText(line,xx,y);y+=w*(l.s||0.075)*1.25+w*(l.gap||0.03);});}
+function drawViews(){var sc=scene(),A=$('cvA'),B=$('cvB');
+  if(sc==='balloon'){zoom(A,{x:190,y:192,s:180},bg());zoom(B,{x:540,y:180,s:230},bg());
+    $('capA').innerHTML='<b>Haare</b> von nah';$('capB').innerHTML='<b>Ballon</b> an der Wand';}
+  else if(sc==='snip'){zoom(A,{x:310,y:M.rod.hold==='snip'?272:300,s:200},bg());
+    var x=B.getContext('2d'),w=B.width,n=M.rod.hold==='snip'?nLift():null;paper(x,w);
+    vtext(x,w,[{t:'angezogene Schnipsel',s:0.07,c:'#4E5677',a:'center'},{t:n==null?'–':String(n),s:0.34,b:true,c:n?'#22865A':'#4E5677',a:'center'},{t:n==null?'Halte den Stab über die Schnipsel.':'von '+M.snips.length+' Schnipseln',s:0.065,c:'#4E5677',a:'center'}]);
+    for(var i=0;i<16;i++){var on=n!=null&&ORDER.indexOf(i)<n;x.fillStyle=on?'#22865A':'#FFFFFF';x.strokeStyle='#8A93A6';x.lineWidth=w*0.006;var cx=w*0.14+(i%8)*w*0.1,cy=w*0.78+Math.floor(i/8)*w*0.09;x.fillRect(cx,cy,w*0.07,w*0.045);x.strokeRect(cx,cy,w*0.07,w*0.045);}
+    $('capA').innerHTML='<b>Schnipsel</b> von nah';$('capB').innerHTML='<b>Zählung</b>';}
+  else{zoom(A,{x:150,y:150,s:150},bg());
+    var x2=B.getContext('2d'),w2=B.width;paper(x2,w2);var logs=st.log.filter(function(l){return l.indexOf('lamp: ')===0;}).slice(-5).map(function(l){return l.slice(6);});
+    vtext(x2,w2,[{t:'Deine Tests',s:0.085,b:true}].concat(logs.length?logs.map(function(l){return {t:l,s:0.06,c:l.indexOf('nicht')>=0?'#4E5677':(l.indexOf('Hand')>=0?'#C8423D':'#1C66C0'),gap:0.015};}):[{t:'Noch kein Test. Reibe und halte die Glimmlampe dran.',s:0.065,c:'#4E5677'}]));
+    $('capA').innerHTML='<b>Glimmlampe</b> von nah';$('capB').innerHTML='<b>Protokoll</b>';}
+}
+function statusInfo(){var sc=scene();
+  if(sc==='balloon'){var b=M.bal;if(b.wig)return ['info','Es wird gerieben …'];if(b.pos==='hand')return ['info','Der Ballon ist in der Hand.'];if(b.pos==='kopf')return b.str>=3?['ok','Die Haare stellen sich zum Ballon hin auf.']:['info','Die Haare bewegen sich nicht.'];return b.str>=3?['ok','Der Ballon bleibt an der Wand kleben.']:['bad','Der Ballon fällt herunter.'];}
+  if(sc==='snip'){if(M.rod.hold!=='snip')return ['info','Der Stab ist hochgehalten.'];var n=nLift();return n?['ok',n+' Schnipsel springen zum Stab.']:['bad','Die Schnipsel bleiben liegen.'];}
+  if(!M.lastLamp)return ['info','Noch nicht getestet.'];return M.lastLamp==='leuchtet nicht'?['bad','Die Glimmlampe bleibt dunkel.']:['ok','Kurz geleuchtet: '+M.lastLamp];}
+function updStatus(){var e=$('stat');if(!e)return;var s=statusInfo();e.className='status '+s[0];e.textContent=s[1];}
+
+/* Szene 1: Luftballon */
+var HEAD={x:190,y:268,r:58};
+var BPOS={hand:[430,140],kopf:[190,112],wand:[522,150]};
+function drawBalloon(c,lupe){
+  /* Wand + Boden */
+  c.fillStyle=col('surface-2');c.fillRect(560,0,80,340);c.strokeStyle=col('line');c.lineWidth=1.5;
+  for(var yy=0;yy<340;yy+=24){c.beginPath();c.moveTo(560,yy);c.lineTo(640,yy);c.stroke();for(var xx=560+((yy/24)%2?20:0);xx<640;xx+=40){c.beginPath();c.moveTo(xx,yy);c.lineTo(xx,yy+24);c.stroke();}}
+  c.fillStyle=col('line');c.fillRect(0,340,640,32);
+  if(!lupe){c.font='bold 13px '+ff();c.fillStyle=col('ink-soft');c.textAlign='center';c.textBaseline='bottom';c.fillText('Wand',600,334);}
+  /* Körper */
+  c.fillStyle=col('blue');c.beginPath();c.moveTo(105,372);c.quadraticCurveTo(110,318,190,316);c.quadraticCurveTo(270,318,275,372);c.fill();
+  /* Kopf */
+  c.fillStyle='#E9B98F';c.beginPath();c.arc(HEAD.x,HEAD.y,HEAD.r,0,Math.PI*2);c.fill();c.strokeStyle='#B9865C';c.lineWidth=2;c.stroke();
+  c.fillStyle='#3A2A1A';c.beginPath();c.arc(170,268,4.5,0,Math.PI*2);c.arc(210,268,4.5,0,Math.PI*2);c.fill();
+  c.strokeStyle='#8A5A3A';c.lineWidth=2.5;c.beginPath();c.arc(190,284,13,0.2*Math.PI,0.8*Math.PI);c.stroke();
+  /* Haare */
+  var b=M.bal,s=strength(b.str),bx=b.x,by=b.y,near=Math.max(0,1-Math.hypot(bx-HEAD.x,by-(HEAD.y-HEAD.r))/190);
+  for(var i=0;i<=24;i++){var a=(-168+i*(156/24))*Math.PI/180,x0=HEAD.x+HEAD.r*Math.cos(a),y0=HEAD.y+HEAD.r*Math.sin(a);
+    var dx=Math.cos(a),dy=Math.sin(a),pull=s*near*0.95,fr=s*0.25*((i%3)-1);
+    var tx=bx-x0,ty=(by+40)-y0,tl=Math.hypot(tx,ty)||1;tx/=tl;ty/=tl;
+    var ex=dx*(1-pull)+tx*pull+fr*dy*-1,ey=dy*(1-pull)+ty*pull+fr*dx;var el=Math.hypot(ex,ey);ex/=el;ey/=el;
+    var L=24+pull*16+(i%2)*4,cx1=x0+dx*L*0.5,cy1=y0+dy*L*0.5;
+    c.strokeStyle='#5B3A1E';c.lineWidth=3;c.lineCap='round';c.beginPath();c.moveTo(x0,y0);c.quadraticCurveTo(cx1,cy1,x0+ex*L,y0+ey*L);c.stroke();}
+  /* Hand + Schnur */
+  var wig=b.wig?Math.sin(b.wig*Math.PI*6)*22:0;bx+=wig;
+  if(b.pos==='hand'&&!b.fall){c.strokeStyle=col('ink-soft');c.lineWidth=1.5;c.beginPath();c.moveTo(bx,by+48);c.quadraticCurveTo(bx-8,by+90,bx,by+130);c.stroke();
+    c.fillStyle='#E9B98F';c.beginPath();c.ellipse(bx,by+140,16,12,0,0,Math.PI*2);c.fill();}
+  /* Ballon */
+  c.fillStyle='#D8433B';c.beginPath();c.ellipse(bx,by,38,46,0,0,Math.PI*2);c.fill();
+  c.fillStyle='rgba(255,255,255,.35)';c.beginPath();c.ellipse(bx-13,by-18,8,14,-0.4,0,Math.PI*2);c.fill();
+  c.fillStyle='#B0322B';c.beginPath();c.moveTo(bx-6,by+52);c.lineTo(bx+6,by+52);c.lineTo(bx,by+44);c.fill();
+}
+
+/* Szene 2 + 3: Stab, Tuch, Schnipsel, Glimmlampe */
+function rodColor(){return M.rod.kind==='kunststoff'?'#5A6578':'#9FD3E0';}
+function clothColor(){return M.rod.cloth==='wolle'?'#B45F3C':'#C9B8E8';}
+function drawRod(c,x0,y,len){var r=M.rod;
+  if(r.obj==='tuch'&&scene()==='lamp'){ // das Tuch wird getestet
+    c.fillStyle=clothColor();c.beginPath();c.moveTo(x0,y-24);for(var i=0;i<=6;i++)c.quadraticCurveTo(x0+i*22+11,y-32+(i%2)*14,x0+i*22+22,y-24);
+    c.lineTo(x0+154,y+24);for(var j=6;j>=0;j--)c.quadraticCurveTo(x0+j*22+11,y+32-(j%2)*14,x0+j*22,y+24);c.closePath();c.fill();
+    c.fillStyle='#E9B98F';c.beginPath();c.ellipse(x0+170,y,18,24,0,0,Math.PI*2);c.fill();return;}
+  c.fillStyle=rodColor();c.beginPath();if(c.roundRect)c.roundRect(x0,y-9,len,18,9);else c.rect(x0,y-9,len,18);c.fill();
+  if(M.rod.kind==='glas'){c.fillStyle='rgba(255,255,255,.45)';c.fillRect(x0+8,y-6,len-16,4);}
+  c.fillStyle='#4B5568';c.beginPath();if(c.roundRect)c.roundRect(x0+len,y-15,56,30,8);else c.rect(x0+len,y-15,56,30);c.fill();
+  c.fillStyle='#E9B98F';c.beginPath();c.ellipse(x0+len+40,y+4,18,22,0,0,Math.PI*2);c.fill();
+  if(r.rub>0){var cx=x0+40+r.rubX;c.fillStyle=clothColor();c.globalAlpha=.95;c.beginPath();c.moveTo(cx,y-20);c.quadraticCurveTo(cx+30,y-30,cx+60,y-20);c.lineTo(cx+60,y+22);c.quadraticCurveTo(cx+30,y+32,cx,y+22);c.closePath();c.fill();c.globalAlpha=1;}
+}
+function drawSnip(c,lupe){var r=M.rod;
+  c.fillStyle=col('line');c.fillRect(120,322,400,12);c.fillRect(140,334,10,38);c.fillRect(490,334,10,38);
+  if(r.rub<=0){c.fillStyle=clothColor();c.beginPath();c.ellipse(560,316,44,8,0,0,Math.PI*2);c.fill();if(!lupe){c.font='12px '+ff();c.fillStyle=col('ink-soft');c.textAlign='center';c.textBaseline='bottom';c.fillText(clothName(),560,304);}}
+  drawRod(c,160,r.y,290);
+  M.snips.forEach(function(sn){var p=sn.p,ty=r.y+12+(sn.x%7),y=sn.y+(ty-sn.y)*p,rot=sn.rot*(1-p)+(sn.rot*0.3)*p;
+    c.save();c.translate(sn.x,y);c.rotate(rot*Math.PI/180);c.fillStyle='#FFFFFF';c.strokeStyle='#8A93A6';c.lineWidth=1;c.fillRect(-sn.w/2,-3.5,sn.w,7);c.strokeRect(-sn.w/2,-3.5,sn.w,7);c.restore();});
+  if(!lupe){c.font='bold 13px '+ff();c.fillStyle=col('ink-soft');c.textAlign='left';c.textBaseline='bottom';c.fillText(rodName(),160,r.y-16);}
+}
+function drawLamp(c,lupe){var r=M.rod,y=150,tip=232+r.x;
+  /* Hand + Glimmlampe */
+  c.fillStyle='#E9B98F';c.beginPath();c.ellipse(58,y+2,26,34,0,0,Math.PI*2);c.fill();
+  c.fillStyle='rgba(255,255,255,.14)';c.strokeStyle='#9AA6C2';c.lineWidth=2.5;c.beginPath();if(c.roundRect)c.roundRect(80,y-20,124,40,20);else c.rect(80,y-20,124,40);c.fill();c.stroke();
+  c.strokeStyle='#9AA6C2';c.lineWidth=3;c.beginPath();c.moveTo(72,y);c.lineTo(84,y);c.moveTo(200,y);c.lineTo(212,y);c.stroke();
+  var g=M.glow,on=g.t>0;
+  [['L',96],['R',152]].forEach(function(e){var lit=on&&g.side===e[0];c.save();if(lit){c.shadowColor='#FF7A1A';c.shadowBlur=26;}c.fillStyle=lit?'#FF7A1A':'#6B7590';
+    c.beginPath();if(c.roundRect)c.roundRect(e[1],y-7,36,14,4);else c.rect(e[1],y-7,36,14);c.fill();if(lit){c.fillStyle='rgba(255,140,40,.35)';c.beginPath();c.ellipse(e[1]+18,y,30,16,0,0,Math.PI*2);c.fill();}c.restore();});
+  if(!lupe){c.font='bold 13px '+ff();c.textAlign='center';c.textBaseline='top';c.fillStyle='#C9D3F2';c.fillText('Glimmlampe',142,y+30);c.fillText('Hand',58,y+42);
+    c.textBaseline='bottom';c.fillText('Seite zur Hand',114,y-26);c.fillText('Seite zum Gegenstand',190,y-46);
+    c.strokeStyle='#5A6480';c.lineWidth=1;c.beginPath();c.moveTo(114,y-26);c.lineTo(114,y-10);c.moveTo(190,y-46);c.lineTo(170,y-10);c.stroke();}
+  drawRod(c,tip,y,290);
+  if(!lupe){c.font='bold 13px '+ff();c.fillStyle='#C9D3F2';c.textAlign='left';c.textBaseline='bottom';c.fillText(r.obj==='tuch'?clothName():rodName(),tip+20,y-30);
+    c.font='12px '+ff();c.fillStyle='#8E97B8';c.textAlign='left';c.textBaseline='bottom';c.fillText('Raum abgedunkelt',8,366);}
+}
+
+/* ---------- Animation ---------- */
+var raf=0,lastT=0,anim={bal:null,rub:0};
+function kick(){if(!raf){lastT=performance.now();raf=requestAnimationFrame(tick);}}
+function tick(t){var dt=Math.min(0.05,(t-lastT)/1000);lastT=t;var moving=false,b=M.bal,r=M.rod;
+  var tgt=b.fall?[BPOS.wand[0],294]:BPOS[b.pos];if(b.wig>0){tgt=[HEAD.x,HEAD.y-HEAD.r-34];b.wig=Math.max(0,b.wig-dt*1.6);moving=true;}
+  var dx=tgt[0]-b.x,dy=tgt[1]-b.y;if(Math.abs(dx)+Math.abs(dy)>0.6){b.x+=dx*Math.min(1,dt*7);b.y+=dy*Math.min(1,dt*(b.fall?5:7));moving=true;}else{b.x=tgt[0];b.y=tgt[1];}
+  if(r.rub>0){r.rub=Math.max(0,r.rub-dt*2.4);r.rubX=Math.sin((1-r.rub)*Math.PI*4)*90+90;moving=true;}
+  var dyr=r.ty-r.y;if(Math.abs(dyr)>0.5){r.y+=dyr*Math.min(1,dt*6);moving=true;}else r.y=r.ty;
+  var dxr=r.tx-r.x;if(Math.abs(dxr)>0.5){r.x+=dxr*Math.min(1,dt*6);moving=true;}else r.x=r.tx;
+  var n=r.hold==='snip'&&Math.abs(dyr)<6?nLift():0;M.snips.forEach(function(s,i){var want=ORDER.indexOf(i)<n?1:0;
+    var d=want-s.p;if(Math.abs(d)>0.01){s.p+=d*Math.min(1,dt*(want?5:7));moving=true;}else s.p=want;});
+  if(M.glow.t>0){M.glow.t=Math.max(0,M.glow.t-dt);moving=true;}
+  draw();
+  if(moving)raf=requestAnimationFrame(tick);else raf=0;}
+
+
+/* ---------- Aktionen ---------- */
+var MAXR=15;
+function setBalStr(v){var b=M.bal;v=Math.max(0,Math.min(MAXR,v));if(v>b.str){b.wig=1;b.fall=false;}b.str=v;kick();}
+function setBalPos(p){var b=M.bal;b.pos=p;b.fall=false;
+  if(p==='wand'&&b.str<3)setTimeout(function(){if(M.bal.pos==='wand'&&M.bal.str<3){M.bal.fall=true;kick();}},550);
+  kick();}
+function setRodStr(v){var r=M.rod;v=Math.max(0,Math.min(MAXR,v));if(v>r.str)r.rub=1;r.str=v;M.lastLamp='';kick();}
+function setHold(on){var r=M.rod;r.hold=on?'snip':'up';r.ty=on?232:90;
+  if(on)setTimeout(function(){if(M.rod.hold!=='snip')return;var n=nLift();logAct('snip',rodName()+(M.rod.str>=3?' ('+clothName()+', '+M.rod.str+'×)':' ungerieben')+': '+(n?n+' Schnipsel':'keine Schnipsel'));},700);
+  kick();}
+function testLamp(){var r=M.rod,s=rodSign();r.tx=-30;kick();
+  setTimeout(function(){var what=r.obj==='tuch'?clothName():rodName()+(r.str>=3?' ('+clothName()+')':' ungerieben');
+    if(!s){M.lastLamp='leuchtet nicht';}
+    else{M.glow={side:s<0?'R':'L',t:1.3};M.lastLamp=s<0?'Seite zum Gegenstand':'Seite zur Hand';r.str=0;}
+    logAct('lamp',what+': '+M.lastLamp);r.tx=0;kick();renderCtl();},520);}
+function logAct(k,t){st.log.push(k+': '+t);if(st.log.length>60)st.log.shift();save();draw();}
+
+/* ---------- Steuerpult ---------- */
+function segHTML(id,opts,cur){return '<span class="seg full" id="'+id+'">'+opts.map(function(o){return '<button type="button" data-v="'+o[0]+'" class="'+(String(o[0])===String(cur)?'sel':'')+'">'+o[1]+'</button>';}).join('')+'</span>';}
+function bindSeg(id,fn){var el=$(id);if(!el)return;Array.prototype.forEach.call(el.children,function(b){b.addEventListener('click',function(){Array.prototype.forEach.call(el.children,function(x){x.className=x===b?'sel':'';});fn(b.dataset.v);});});}
+function slider(id,lab,disp,min,max,step,val,lo,hi,cls){return '<div class="lift"><div class="disp'+(cls?' '+cls:'')+'"><small>'+lab+'</small><span id="disp'+id+'">'+disp+'</span></div><div class="keys"><button class="key" id="'+id+'m" type="button" aria-label="weniger">◀</button><button class="key" id="'+id+'p" type="button" aria-label="mehr">▶</button></div></div>'+
+  '<input type="range" id="'+id+'S" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'" aria-label="'+lab+'"><div class="scale"><span>'+lo+'</span><span>'+hi+'</span></div>';}
+function bindSlider(id,get,set,step,min,max){function u(v){v=Math.max(min,Math.min(max,v));set(v);$(id+'S').value=v;$('disp'+id).textContent=v+'×';draw();}
+  $(id+'S').addEventListener('input',function(){u(parseFloat(this.value));});$(id+'m').addEventListener('click',function(){u(get()-step);});$(id+'p').addEventListener('click',function(){u(get()+step);});}
+function renderCtl(){var sc=scene(),h='',r=M.rod;
+  if(sc==='balloon'){h=slider('R','SO OFT AM HAAR GERIEBEN',M.bal.str+'×',0,MAXR,1,M.bal.str,'0 (nicht gerieben)',MAXR+'×','g')+
+    '<div class="ctlrow"><span>BALLON HALTEN</span>'+segHTML('sP',[['hand','in der Hand'],['kopf','über den Kopf'],['wand','an die Wand']],M.bal.pos)+'</div>';}
+  else{h='<div class="ctlrow"><span>STAB</span>'+segHTML('sK',[['kunststoff','Kunststoffstab'],['glas','Glasstab']],r.kind)+'</div>'+
+    '<div class="ctlrow"><span>TUCH ZUM REIBEN</span>'+segHTML('sC',[['wolle','Wolltuch'],['seide','Seidentuch']],r.cloth)+'</div>'+
+    slider('R','SO OFT GERIEBEN',r.str+'×',0,MAXR,1,r.str,'0 (nicht gerieben)',MAXR+'×','g')+
+    (sc==='snip'?'<label class="chk"><input type="checkbox" id="tHold"'+(r.hold==='snip'?' checked':'')+'> Stab über die Schnipsel halten</label>':
+      '<div class="ctlrow"><span>AN DIE GLIMMLAMPE HALTEN</span>'+segHTML('sO',[['stab','den Stab'],['tuch','das Tuch']],r.obj)+'</div><div class="row"><button class="btn pri" type="button" id="bTest">Glimmlampe dranhalten</button></div>');}
+  h+='<p class="status info" id="stat"></p>'+(sc==='balloon'?'':'<p class="muted" style="font-size:14px">Tipp: Du kannst auch mit dem Finger auf dem Stab hin- und herwischen.</p>');
+  $('ctl').innerHTML=h;
+  if(sc==='balloon'){bindSlider('R',function(){return M.bal.str;},setBalStr,1,0,MAXR);bindSeg('sP',setBalPos);}
+  else{bindSlider('R',function(){return r.str;},setRodStr,1,0,MAXR);
+    bindSeg('sK',function(v){r.kind=v;r.str=0;M.lastLamp='';renderCtl();draw();});bindSeg('sC',function(v){r.cloth=v;r.str=0;M.lastLamp='';renderCtl();draw();});
+    if(sc==='snip')$('tHold').addEventListener('change',function(){setHold(this.checked);});
+    else{bindSeg('sO',function(v){r.obj=v;M.lastLamp='';draw();});$('bTest').addEventListener('click',testLamp);}}
+  updStatus();
+}
+/* Wischen auf dem Stab = Reiben */
+(function(){var down=false,lx=0,acc=0,dir=0;
+  cv.addEventListener('pointerdown',function(e){if(scene()==='balloon')return;down=true;lx=e.clientX;acc=0;dir=0;try{cv.setPointerCapture(e.pointerId);}catch(_){}});
+  cv.addEventListener('pointermove',function(e){if(!down)return;var dx=e.clientX-lx;lx=e.clientX;var d=Math.sign(dx);acc+=Math.abs(dx);
+    if(d&&d!==dir&&acc>40){acc=0;setRodStr(M.rod.str+1);var S=$('RS');if(S){S.value=M.rod.str;$('dispR').textContent=M.rod.str+'×';}}if(d)dir=d;});
+  ['pointerup','pointercancel'].forEach(function(n){cv.addEventListener(n,function(){down=false;});});})();
+
+/* ---------- Stationen-Weg & Bausteine ---------- */
+function unlocked(i){return i===0||st.done[i-1];}
+function renderRoute(){var h='';STATIONS.forEach(function(s,i){var cls='stop'+(s.pro?' pro':'')+(i===st.station?' on':'')+(st.done[i]?' done':'');
+    h+='<button type="button" class="'+cls+'" data-i="'+i+'"'+(unlocked(i)?'':' disabled')+'><span class="n">'+(st.done[i]?'✓':(s.pro?'★':(i+1)))+'</span>'+s.name+'</button>';});
+  $('route').innerHTML=h;Array.prototype.forEach.call($('route').querySelectorAll('.stop'),function(b){b.addEventListener('click',function(){go(+b.dataset.i);});});}
+function go(i){if(!unlocked(i))return;st.station=i;save();render();window.scrollTo({top:0,behavior:'smooth'});}
+function finish(i){if(!st.done[i]){st.done[i]=true;save();renderRoute();}}
+function nextBtn(i){if(!st.done[i]||i>=STATIONS.length-1)return '';var n=STATIONS[i+1];return '<button class="btn pri" type="button" id="nextSt">'+(n.pro?'Zu den Profi-Aufgaben ★':'Weiter zu Station '+(i+2)+': '+n.name)+' →</button>';}
+function bindNext(){var b=$('nextSt');if(b)b.addEventListener('click',function(){go(st.station+1);});}
+function mcHTML(id,q,opts,val,ans,grid){return '<div class="q"><p><b>'+q+'</b></p><div class="choice'+(grid?' grid2':'')+'" data-mc="'+id+'">'+opts.map(function(o,j){return '<button type="button" class="opt'+(val===j?(j===ans?' ok':' bad'):'')+'" data-j="'+j+'">'+o+'</button>';}).join('')+'</div><p class="fb" id="fb_'+id+'"></p></div>';}
+function bindMC(id,ans,key,okMsg,badMsgs,onOk,store){var box=document.querySelector('[data-mc="'+id+'"]');if(!box)return;
+  Array.prototype.forEach.call(box.children,function(b){b.addEventListener('click',function(){var j=+b.dataset.j;tryInc(key,j===ans,j);store(j);save();
+    Array.prototype.forEach.call(box.children,function(x,i){x.className='opt'+(i===j?(j===ans?' ok':' bad'):'');});
+    var fb=$('fb_'+id);if(j===ans){fb.className='fb ok';fb.textContent=okMsg;if(onOk)onOk();}else{fb.className='fb bad';fb.textContent=(typeof badMsgs==='string')?badMsgs:(badMsgs[j]||'Noch nicht. Probiere es im Modell aus.');
+      showHelp(fb,key,function(){store(ans);save();if(onOk)onOk();});}});});}
+function showFb(id,ok,msg){var f=$('fb_'+id);if(f){f.className='fb '+(ok?'ok':'bad');f.textContent=msg;}}
+function segQHTML(list,store,locked){return list.map(function(q){var v=store[q.id];return '<div class="q"><p>'+q.q+'</p><span class="seg" data-sq="'+q.id+'">'+q.o.map(function(o,j){return '<button type="button" data-j="'+j+'" class="'+(v===j?(locked?'ok':'sel'):'')+'">'+o+'</button>';}).join('')+'</span></div>';}).join('');}
+function bindSegQ(store,locked){Array.prototype.forEach.call(document.querySelectorAll('[data-sq]'),function(sg){Array.prototype.forEach.call(sg.children,function(b){b.addEventListener('click',function(){if(locked())return;store[sg.dataset.sq]=+b.dataset.j;save();Array.prototype.forEach.call(sg.children,function(x){x.className=x===b?'sel':'';});});});});}
+function checkSegQ(list,store,key,fbId,onHelp){var fb=$(fbId),miss=0,wrong=[];
+  list.forEach(function(q){var v=store[q.id],sg=document.querySelector('[data-sq="'+q.id+'"]');if(v==null){miss++;return;}var ok=v===q.a;sg.children[v].className=ok?'ok':'bad';if(!ok)wrong.push(q);});
+  if(miss){fb.className='fb bad';fb.textContent='Es fehlen noch '+miss+' Antwort'+(miss>1?'en':'')+'.';return false;}
+  tryInc(key,!wrong.length,wrong.map(function(q){return q.id;}).join(','));
+  if(wrong.length){fb.className='fb bad';fb.textContent=wrong[0].w;if(onHelp)showHelp(fb,key,function(){list.forEach(function(q){store[q.id]=q.a;});save();onHelp();helpMsg(fbId,'Die Lösung ist markiert. Lies sie dir durch und tippe auf „Prüfen“.');});return false;}return true;}
+
+/* ---------- Vermutung ---------- */
+function pic(kind){var inner;
+  if(kind==='glue')inner='<path d="M30 20 h20 v12 l6 6 v26 a4 4 0 0 1 -4 4 h-24 a4 4 0 0 1 -4 -4 v-26 l6 -6z" fill="#F3F5FA" stroke="#4E5677" stroke-width="3"/><path d="M34 46 q6 10 12 0" fill="none" stroke="#C9A227" stroke-width="5" stroke-linecap="round"/><circle cx="40" cy="62" r="3" fill="#C9A227"/>';
+  else if(kind==='charge')inner='<circle cx="29" cy="40" r="13" fill="#1C66C0"/><text x="29" y="47" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">–</text><circle cx="51" cy="40" r="13" fill="#C8423D"/><text x="51" y="47" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">+</text>';
+  else if(kind==='magnet')inner='<path d="M24 24 v20 a16 16 0 0 0 32 0 v-20 h-10 v20 a6 6 0 0 1 -12 0 v-20z" fill="#C8423D"/><rect x="24" y="20" width="10" height="8" fill="#9AA3B2"/><rect x="46" y="20" width="10" height="8" fill="#9AA3B2"/>';
+  else inner='<rect x="36" y="16" width="8" height="38" rx="4" fill="#F3F5FA" stroke="#4E5677" stroke-width="2.5"/><circle cx="40" cy="58" r="9" fill="#E8432E"/><rect x="38" y="30" width="4" height="26" fill="#E8432E"/>';
+  return '<svg viewBox="0 0 80 80" aria-hidden="true"><rect x="4" y="4" width="72" height="72" rx="36" fill="#FFF3D6" stroke="#3A6AA8" stroke-width="4"/>'+inner+'</svg>';}
+var GUESS=[{k:'A',t:'glue',n:'klebrig'},{k:'B',t:'charge',n:'elektrisch geladen'},{k:'C',t:'magnet',n:'magnetisch'},{k:'D',t:'warm',n:'warm'}];
+function guessName(k){var g=GUESS.filter(function(x){return x.k===k;})[0];return g?g.k+' ('+g.n+')':'';}
+
+/* ---------- Station 1: Luftballon ---------- */
+var OBS1=[
+  {id:'a',q:'1. Stelle „so oft gerieben“ auf <b>0</b>. Halte den Ballon über den Kopf. Die Haare …',o:['bewegen sich nicht','stellen sich zum Ballon hin auf'],a:0,w:'Stelle den Regler auf 0 und wähle „über den Kopf“. Schau in die Ansicht „Haare von nah“.'},
+  {id:'b',q:'2. Reibe den Ballon mindestens <b>5-mal</b> am Haar. Halte ihn über den Kopf. Die Haare …',o:['bewegen sich nicht','stellen sich zum Ballon hin auf'],a:1,w:'Stelle den Regler auf 5 oder mehr und schau in die Ansicht „Haare von nah“.'},
+  {id:'c',q:'3. Halte den <b>geriebenen</b> Ballon an die Wand. Er …',o:['bleibt kleben','fällt herunter'],a:0,w:'Stelle den Regler auf 5 oder mehr und wähle dann „an die Wand“.'},
+  {id:'d',q:'4. Stelle den Regler wieder auf <b>0</b>. Halte den Ballon an die Wand. Er …',o:['bleibt kleben','fällt herunter'],a:1,w:'Stelle den Regler auf 0, wähle „in der Hand“ und dann „an die Wand“.'}
+];
+var STARTS=['Ich vermute, dass beim Reiben …','Ich glaube, der Ballon …','Ich denke, es hat mit … zu tun, weil …'];
+function r1(){var s=st.s1;
+  var g='<div class="guess stack"><p class="eyebrow pro">Bevor du startest</p><p>Ein Luftballon wird an den Haaren gerieben. Danach bleibt er an der Wand kleben. <b>Warum?</b> Der Ballon ist durch das Reiben …</p><div class="choice grid4" id="gs">'+
+    GUESS.map(function(o){return '<button type="button" class="opt pic'+(st.guess===o.k?' sel':'')+'" data-k="'+o.k+'"><b>'+o.k+'</b>'+pic(o.t)+'<span style="font-size:14px">'+o.n+'</span></button>';}).join('')+
+    '</div><p class="muted">'+(st.guess?'Gespeichert: Vermutung '+st.guess+'. In Station 4 prüfst du sie.':'Hier gibt es noch kein richtig oder falsch.')+'</p></div>';
+  var obs='<div class="stack"><p class="eyebrow">Teil A · Beobachten im Modell</p><p>Probiere jeden Schritt links im Modell aus. Mit dem Regler stellst du ein, wie oft der Ballon am Haar gerieben wird.</p>'+segQHTML(OBS1,s.obs,s.obsOk)+
+    (s.obsOk?'':'<div class="row"><button class="btn pri" type="button" id="c1">Prüfen</button></div>')+'<p class="fb" id="fb1"></p></div>';
+  var verm=s.obsOk?'<div class="stack"><p class="eyebrow">Teil B · Unsere Leitfrage</p><p class="note"><b>Was passiert mit Gegenständen, wenn man sie aneinander reibt?</b></p>'+
+    '<p>Schreibe deine Vermutung auf. Tippe auf einen Satzanfang:</p><div class="row">'+STARTS.map(function(t,i){return '<button class="btn tip" type="button" data-st="'+i+'">'+t+'</button>';}).join('')+'</div>'+
+    '<textarea class="free" id="verm" rows="3" placeholder="Ich vermute, dass …, weil …">'+esc(s.verm)+'</textarea>'+(s.ok?'':'<div class="row"><button class="btn pri" type="button" id="c1v">Vermutung speichern</button></div>')+'<p class="fb" id="fb1v"></p></div>':'';
+  $('task').innerHTML=g+'<div><p class="eyebrow">Station 1 · Luftballon</p><h2>Was passiert beim Reiben?</h2></div>'+obs+verm+(st.done[0]?'<p class="win"><b>Gut beobachtet!</b> In den nächsten Stationen findest du heraus, was beim Reiben passiert.</p>':'')+'<div class="row">'+nextBtn(0)+'</div>';
+  Array.prototype.forEach.call(document.querySelectorAll('#gs .opt'),function(b){b.addEventListener('click',function(){st.guess=b.dataset.k;save();r1();});});
+  bindSegQ(s.obs,function(){return s.obsOk;});
+  if(!s.obsOk)$('c1').addEventListener('click',function(){if(checkSegQ(OBS1,s.obs,'s1obs','fb1',r1)){s.obsOk=true;save();r1();}});
+  else helpMsg('fb1','Richtig! Nur der geriebene Ballon zieht die Haare an und bleibt an der Wand kleben.');
+  if(s.obsOk){var ta=$('verm');ta.addEventListener('input',function(){s.verm=this.value;save();});
+    Array.prototype.forEach.call(document.querySelectorAll('[data-st]'),function(b){b.addEventListener('click',function(){ta.value=STARTS[+b.dataset.st].replace(/ …/g,' ').replace(/\s+$/,' ');s.verm=ta.value;save();ta.focus();});});
+    if(!s.ok)$('c1v').addEventListener('click',function(){var fb=$('fb1v');if(s.verm.trim().length<20){fb.className='fb bad';fb.textContent='Schreibe einen ganzen Satz.';return;}s.ok=true;finish(0);save();r1();});
+    else helpMsg('fb1v','Gespeichert. Am Ende prüfst du deine Vermutung.');}
+  bindNext();
+}
+
+/* ---------- Station 2: Papierschnipsel ---------- */
+var OBS2=[
+  {id:'a',q:'1. Kunststoffstab, <b>0-mal</b> gerieben, über den Schnipseln. Die Schnipsel …',o:['bleiben liegen','springen zum Stab'],a:0,w:'Stelle den Regler auf 0 und kreuze „Stab über die Schnipsel halten“ an.'},
+  {id:'b',q:'2. Kunststoffstab, mit dem <b>Wolltuch</b> mindestens 5-mal gerieben, über den Schnipseln. Die Schnipsel …',o:['bleiben liegen','springen zum Stab'],a:1,w:'Stelle den Regler auf 5 oder mehr und halte den Stab über die Schnipsel.'},
+  {id:'c',q:'3. <b>Glasstab</b>, mit dem <b>Seidentuch</b> mindestens 5-mal gerieben, über den Schnipseln. Die Schnipsel …',o:['bleiben liegen','springen zum Stab'],a:1,w:'Wähle Glasstab und Seidentuch, stelle den Regler auf 5 oder mehr und halte den Stab über die Schnipsel.'}
+];
+var QMORE={q:'Halte den Stab über die Schnipsel. Stelle einmal 4 und einmal 12 Reibzüge ein. Schau auf die Zählung. Was stellst du fest?',o:['Je öfter man reibt, desto mehr Schnipsel werden angezogen.','Die Zahl der Reibzüge ist egal.','Je öfter man reibt, desto weniger Schnipsel werden angezogen.'],a:0,
+  ok:'Genau! Je öfter man reibt, desto stärker wird der Stab geladen.',bad:['','Vergleiche die Zählung bei 4 und bei 12 Reibzügen.','Vergleiche die Zählung bei 4 und bei 12 Reibzügen.']};
+var QWHY2={q:'Was zeigen die Versuche mit den Papierschnipseln?',o:['Durch Reiben werden Gegenstände elektrisch geladen. Geladene Gegenstände ziehen leichte Gegenstände an.','Durch Reiben werden Gegenstände magnetisch.','Die Schnipsel kleben am Stab, weil er warm geworden ist.'],a:0,
+  ok:'Richtig! Man sagt: Der Stab ist elektrisch geladen. Geladene Gegenstände ziehen leichte Gegenstände an.',bad:['','Papier ist nicht magnetisch. Ein Magnet zieht keine Papierschnipsel an!','Die Schnipsel springen schon, bevor sie den Stab berühren. Wärme kann das nicht sein.']};
+function r2(){var s=st.s2;
+  var obs='<div class="stack"><p class="eyebrow">Teil A · Versuch im Modell</p><p>Wähle Stab und Tuch im Steuerpult. Stelle ein, wie oft gerieben wird, und halte den Stab <b>über die Schnipsel</b>.</p>'+segQHTML(OBS2,s.obs,s.obsOk)+
+    (s.obsOk?'':'<div class="row"><button class="btn pri" type="button" id="c2">Prüfen</button></div>')+'<p class="fb" id="fb2"></p></div>';
+  var more=s.obsOk?'<div class="stack"><p class="eyebrow">Teil B · Je – desto</p>'+mcHTML('more',QMORE.q,QMORE.o,s.more,QMORE.a)+'</div>':'';
+  var why=s.moreOk?mcHTML('why2',QWHY2.q,QWHY2.o,s.why,QWHY2.a):'';
+  $('task').innerHTML='<div><p class="eyebrow">Station 2 · Papierschnipsel</p><h2>Was kann ein geriebener Stab?</h2></div>'+obs+more+why+
+    (st.done[1]?'<p class="win"><b>Super!</b> Geriebene Gegenstände sind <b>elektrisch geladen</b>. Sie ziehen leichte Gegenstände an.</p>':'')+'<div class="row">'+nextBtn(1)+'</div>';
+  bindSegQ(s.obs,function(){return s.obsOk;});
+  if(!s.obsOk)$('c2').addEventListener('click',function(){if(checkSegQ(OBS2,s.obs,'s2obs','fb2',r2)){s.obsOk=true;save();r2();}});
+  else helpMsg('fb2','Gut beobachtet! Nur geriebene Stäbe ziehen die Schnipsel an.');
+  if(s.obsOk){bindMC('more',QMORE.a,'s2more',QMORE.ok,QMORE.bad,function(){s.moreOk=true;save();r2();showFb('more',true,QMORE.ok);},function(j){s.more=j;});if(s.moreOk)showFb('more',true,QMORE.ok);}
+  if(s.moreOk){bindMC('why2',QWHY2.a,'s2why',QWHY2.ok,QWHY2.bad,function(){s.whyOk=true;finish(1);save();r2();showFb('why2',true,QWHY2.ok);},function(j){s.why=j;});if(s.whyOk)showFb('why2',true,QWHY2.ok);}
+  bindNext();
+}
+
+/* ---------- Station 3: Glimmlampe ---------- */
+var L3=['Seite zum Gegenstand','Seite zur Hand','leuchtet nicht'];
+var OBS3=[
+  {id:'a',q:'1. <b>Kunststoffstab</b> mit Wolltuch gerieben. Die Glimmlampe leuchtet an der …',o:L3,a:0,w:'Kunststoffstab und Wolltuch wählen, Regler auf 5 oder mehr, dann „Glimmlampe dranhalten“. Schau auf „Glimmlampe von nah“.'},
+  {id:'b',q:'2. <b>Glasstab</b> mit Seidentuch gerieben. Die Glimmlampe leuchtet an der …',o:L3,a:1,w:'Glasstab und Seidentuch wählen, Regler auf 5 oder mehr, dann testen. Schau ins Protokoll.'},
+  {id:'c',q:'3. Stab <b>nicht</b> gerieben (Regler auf 0). Die Glimmlampe …',o:L3,a:2,w:'Stelle den Regler auf 0 und tippe auf „Glimmlampe dranhalten“.'},
+  {id:'d',q:'4. Reibe den Kunststoffstab mit dem Wolltuch. Teste danach <b>das Wolltuch</b>. Die Glimmlampe leuchtet an der …',o:L3,a:1,w:'Kunststoffstab mit Wolltuch reiben (Regler auf 5 oder mehr). Wähle dann „das Tuch“ und tippe auf „Glimmlampe dranhalten“.'}
+];
+var QWHY3={q:'Was schließt du aus deinen Beobachtungen?',o:['Es gibt zwei verschiedene Arten von Ladung.','Es gibt nur eine Art von Ladung.','Die Glimmlampe leuchtet zufällig mal links, mal rechts.'],a:0,
+  ok:'Genau! Der Kunststoffstab und der Glasstab sind verschieden geladen. Auch Stab und Tuch sind verschieden geladen.',bad:['','Vergleiche Kunststoffstab und Glasstab: Leuchtet die Lampe auf derselben Seite?','Teste mehrmals: Beim Kunststoffstab leuchtet immer dieselbe Seite.']};
+var QAPP={q:'Eine Glimmlampe leuchtet an der Seite zur Hand. Wie ist der Gegenstand geladen?',o:['positiv (+)','negativ (–)','gar nicht'],a:0,ok:'Richtig! Leuchtet die Seite zur Hand, ist der Gegenstand positiv geladen.',bad:['','Schau in die Merkhilfe: Welche Seite leuchtet bei negativer Ladung?','Die Lampe leuchtet. Also ist der Gegenstand geladen.']};
+var MERKHILFE='<div class="merk"><h3>Merkhilfe: So liest man die Glimmlampe</h3><p>Die beiden Ladungsarten heißen <span class="k">positiv (+)</span> und <span class="k">negativ (–)</span>.</p>'+
+  '<ul style="margin:6px 0 0;padding-left:1.2em"><li>Leuchtet die <b>Seite zum Gegenstand</b>, ist der Gegenstand <b>negativ (–)</b> geladen.</li><li>Leuchtet die <b>Seite zur Hand</b>, ist der Gegenstand <b>positiv (+)</b> geladen.</li></ul></div>';
+function r3(){var s=st.s3;
+  var obs='<div class="stack"><p class="eyebrow">Teil A · Nachweis mit der Glimmlampe</p><p>Eine <b>Glimmlampe</b> leuchtet kurz auf, wenn man sie an einen geladenen Gegenstand hält. Danach ist der Gegenstand entladen und der Regler springt auf 0. Reibe vor jedem Test neu.</p>'+segQHTML(OBS3,s.obs,s.obsOk)+
+    (s.obsOk?'':'<div class="row"><button class="btn pri" type="button" id="c3">Prüfen</button></div>')+'<p class="fb" id="fb3"></p></div>';
+  var why=s.obsOk?mcHTML('why3',QWHY3.q,QWHY3.o,s.why,QWHY3.a):'';
+  var app=s.whyOk?MERKHILFE+mcHTML('app3',QAPP.q,QAPP.o,s.app,QAPP.a,false):'';
+  $('task').innerHTML='<div><p class="eyebrow">Station 3 · Glimmlampe</p><h2>Wie weist man Ladung nach?</h2></div>'+obs+why+app+
+    (st.done[2]?'<p class="win"><b>Stark!</b> Du kannst jetzt mit der Glimmlampe herausfinden, ob ein Gegenstand positiv oder negativ geladen ist.</p>':'')+'<div class="row">'+nextBtn(2)+'</div>';
+  bindSegQ(s.obs,function(){return s.obsOk;});
+  if(!s.obsOk)$('c3').addEventListener('click',function(){if(checkSegQ(OBS3,s.obs,'s3obs','fb3',r3)){s.obsOk=true;save();r3();}});
+  else helpMsg('fb3','Gut beobachtet! Kunststoffstab und Glasstab bringen verschiedene Seiten zum Leuchten.');
+  if(s.obsOk){bindMC('why3',QWHY3.a,'s3why',QWHY3.ok,QWHY3.bad,function(){s.whyOk=true;save();r3();showFb('why3',true,QWHY3.ok);},function(j){s.why=j;});if(s.whyOk)showFb('why3',true,QWHY3.ok);}
+  if(s.whyOk){bindMC('app3',QAPP.a,'s3app',QAPP.ok,QAPP.bad,function(){s.appOk=true;finish(2);save();r3();showFb('app3',true,QAPP.ok);},function(j){s.app=j;});if(s.appOk)showFb('app3',true,QAPP.ok);}
+  bindNext();
+}
+
+/* ---------- Station 4: Merksatz ---------- */
+var GAPS=[
+  {pre:'Wenn man zwei verschiedene Gegenstände aneinander reibt, werden sie elektrisch ',post:'.',o:['geladen','magnetisch','warm'],a:0},
+  {pre:'Elektrisch geladene Gegenstände ',post:' leichte Gegenstände wie Papierschnipsel an.',o:['ziehen','kleben','drücken'],a:0},
+  {pre:'Mit einer ',post:' kann man nachweisen, ob ein Gegenstand elektrisch geladen ist.',o:['Glimmlampe','Lupe','Kompass'],a:0},
+  {pre:'Es gibt ',post:' Arten von Ladung: positive (+) und negative (–) Ladung.',o:['zwei','drei','eine'],a:0},
+  {pre:'Leuchtet die Glimmlampe an der Seite zum Gegenstand, ist er ',post:' geladen.',o:['negativ','positiv'],a:0},
+  {pre:'Beim Reiben werden die beiden Gegenstände ',post:' geladen.',o:['entgegengesetzt','gleich'],a:0}
+];
+var WORTE='geladen · ziehen · Glimmlampe · zwei · negativ · entgegengesetzt';
+var MERK='<div class="merk"><h3>Merksatz: Elektrische Aufladung durch Reibung</h3><ol style="margin:0;padding-left:1.2em">'+GAPS.map(function(g){return '<li>'+g.pre+'<span class="k">'+g.o[g.a]+'</span>'+g.post+'</li>';}).join('')+'</ol></div>';
+var PULLI={q:'Beim Ausziehen deines Pullovers knistert es und deine Haare stehen ab. Warum?',o:['Pullover und Haare werden durch Reibung elektrisch geladen.','Der Pullover ist magnetisch.','Die Haare sind zu trocken.'],a:0,
+  ok:'Richtig! Pullover und Haare reiben aneinander und werden dabei entgegengesetzt geladen. Das Knistern sind winzige Funken.',bad:['','Ein Pullover ist kein Magnet. Was passiert beim Ausziehen mit Pullover und Haaren?','Trockene Luft hilft zwar, erklärt aber nicht das Abstehen. Was passiert beim Ausziehen?']};
+function r4(){var s=st.s4;
+  var refl=s.ok?'<div class="guess stack"><p class="eyebrow pro">Zurück zu deiner Vermutung</p>'+
+    (st.guess?'<p>Du hast vermutet: <b>'+guessName(st.guess)+'</b>.</p>'+(st.guess==='B'?'<p class="fb ok">Deine Vermutung stimmt!</p>':'<p class="fb bad">Deine Vermutung stimmt nicht. Richtig ist B: Der Ballon ist elektrisch geladen.</p>'):'<p>Du hast keine Vermutung gewählt. Richtig ist <b>B</b>.</p>')+
+    (st.s1.verm?'<p class="muted">Deine Vermutung aus Station 1: „'+esc(st.s1.verm)+'“</p>':'')+
+    '<p>Beantworte jetzt die Leitfrage in einem Satz: <b>Was passiert mit Gegenständen, wenn man sie aneinander reibt?</b></p><textarea class="free" id="refl" rows="2" placeholder="Wenn man Gegenstände aneinander reibt, …">'+esc(s.refl)+'</textarea></div>':'';
+  var pulli=s.ok?mcHTML('pulli',PULLI.q,PULLI.o,s.pulli,PULLI.a):'';
+  $('task').innerHTML='<div><p class="eyebrow">Station 4 · Merksatz</p><h2>Unser Merksatz</h2></div><p>Wähle die passenden Wörter. Im Modell kannst du alles nachprüfen.</p><p class="hint"><b>Wortspeicher:</b> '+WORTE+'</p>'+
+   '<div class="gap"><ol>'+GAPS.map(function(g,i){return '<li>'+g.pre+'<select class="sel" id="g'+i+'" aria-label="Lücke '+(i+1)+'"><option value="">…</option>'+g.o.map(function(o,j){return '<option value="'+j+'">'+o+'</option>';}).join('')+'</select>'+g.post+'</li>';}).join('')+'</ol></div>'+
+   '<div class="row"><button class="btn pri" type="button" id="c4">Prüfen</button><span class="fb" id="fb4"></span></div>'+
+   (s.ok?MERK+'<p class="muted">Schreibe den Merksatz gleich in dein Heft. Wir besprechen ihn gemeinsam.</p>':'')+refl+pulli+(s.pulliOk?'<p class="win"><b>Geschafft!</b> Speichere jetzt deine Ergebnisse. Wenn du noch Zeit hast: Profi-Zusatz ★</p>'+resultsHTML():'')+'<div class="row">'+nextBtn(3)+'</div>';
+  GAPS.forEach(function(g,i){var el=$('g'+i),v=s.gaps[i];if(s.ok){el.value=String(g.a);el.className='sel ok';}else if(v!=null&&v!=='')el.value=v;
+    el.addEventListener('change',function(){s.gaps[i]=this.value;this.className='sel';save();});});
+  $('c4').addEventListener('click',function(){if(s.ok)return;var wrong=0,empty=0;GAPS.forEach(function(g,i){var e=$('g'+i);if(e.value===''){empty++;return;}var ok=+e.value===g.a;e.className='sel '+(ok?'ok':'bad');if(!ok)wrong++;});
+    var fb=$('fb4');if(empty){fb.className='fb bad';fb.textContent='Es sind noch '+empty+' Lücken offen.';return;}
+    tryInc('s4gaps',!wrong,GAPS.map(function(g,i){var v=$('g'+i).value;return v!==''&&+v!==g.a?i+':'+v:null;}).filter(Boolean).join(','));
+    if(wrong){fb.className='fb bad';fb.textContent=wrong+' Lücke'+(wrong>1?'n stimmen':' stimmt')+' noch nicht. Schau in deine Ergebnisse aus Station 1 bis 3!';
+      showHelp(fb,'s4gaps',function(){GAPS.forEach(function(g,i){s.gaps[i]=String(g.a);});save();r4();helpMsg('fb4','Die Lösung ist eingetragen. Lies sie dir durch und tippe auf „Prüfen“.');});return;}
+    s.ok=true;save();r4();});
+  if(s.ok){$('refl').addEventListener('input',function(){s.refl=this.value;save();});
+    bindMC('pulli',PULLI.a,'s4pulli',PULLI.ok,PULLI.bad,function(){s.pulliOk=true;finish(3);save();r4();showFb('pulli',true,PULLI.ok);},function(j){s.pulli=j;});if(s.pulliOk)showFb('pulli',true,PULLI.ok);}
+  bindResults();bindNext();
+}
+
+/* ---------- Station 5: Profi ---------- */
+var P5=[
+  {id:'a',title:'Der Wasserstrahl',task:'Ein geriebener Kunststoffstab wird neben einen dünnen Wasserstrahl aus dem Wasserhahn gehalten.',q:'Was passiert?',
+   o:['Der Wasserstrahl biegt sich zum Stab hin.','Der Wasserstrahl biegt sich vom Stab weg.','Nichts, Wasser kann man nicht anziehen.'],a:0,ok:'Richtig! Der geladene Stab zieht das Wasser an, genau wie die Papierschnipsel.',bad:'Denk an die Papierschnipsel: Was macht ein geladener Gegenstand mit leichten Dingen?'},
+  {id:'b',title:'Staub auf dem Bildschirm',task:'Auf einem Fernseher sammelt sich schnell Staub, vor allem, wenn man ihn mit einem trockenen Tuch abgewischt hat.',q:'Warum?',
+   o:['Beim Wischen wird der Bildschirm geladen und zieht Staub an.','Das Tuch lässt Staubfussel zurück.','Der Bildschirm ist magnetisch.'],a:0,ok:'Genau! Durch das Reiben mit dem Tuch wird der Bildschirm geladen. Geladene Gegenstände ziehen Staub an.',bad:'Was passiert beim Wischen mit dem Tuch? Denk an Stab und Tuch.'},
+  {id:'c',title:'Der Schlag an der Türklinke',task:'Du läufst mit Gummisohlen über einen Teppich. Dann fasst du die Metall-Türklinke an und spürst einen kleinen Schlag.',q:'Was ist vorher passiert?',
+   o:['Beim Laufen hast du dich durch Reibung elektrisch aufgeladen.','Die Türklinke ist an den Strom angeschlossen.','Der Teppich ist magnetisch.'],a:0,ok:'Richtig! Beim Laufen reiben Schuhe und Teppich aneinander. Du wirst geladen. An der Klinke entlädt sich die Ladung mit einem kleinen Funken.',bad:'Was passiert, wenn Schuhsohlen über den Teppich reiben?'}
+];
+function r5(){
+  $('task').innerHTML='<div><p class="eyebrow pro">Profi-Zusatz ★</p><h2>Ladung im Alltag</h2></div>'+
+    P5.map(function(p){var v=st.s5[p.id];return '<div class="q"><h3>'+p.title+'</h3><p>'+p.task+'</p><p><b>'+p.q+'</b></p><div class="choice" data-p="'+p.id+'">'+p.o.map(function(o,j){return '<button type="button" class="opt'+(v===j?(j===p.a?' ok':' bad'):'')+'" data-j="'+j+'">'+o+'</button>';}).join('')+'</div><p class="fb'+(v===p.a?' ok':(v!=null?' bad':''))+'">'+(v==null?'':(v===p.a?p.ok:p.bad))+'</p></div>';}).join('')+
+    (st.done[4]?'<p class="win"><b>Profi-Level geschafft!</b> Erkläre einem Mitschüler eine der Aufgaben.</p>':'')+resultsHTML();
+  Array.prototype.forEach.call(document.querySelectorAll('.choice[data-p]'),function(box){var p=P5.filter(function(x){return x.id===box.dataset.p;})[0];
+    Array.prototype.forEach.call(box.children,function(b){b.addEventListener('click',function(){var j=+b.dataset.j;tryInc('s5'+p.id,j===p.a,j);st.s5[p.id]=j;save();if(P5.every(function(x){return st.s5[x.id]===x.a;}))finish(4);r5();});});});
+  bindResults();
+}
+
+/* ---------- Ergebnisse ---------- */
+var TL=[['s1obs','Station 1 · Beobachtungen am Luftballon'],['s2obs','Station 2 · Versuch Papierschnipsel'],['s2more','Station 2 · Je öfter reiben, desto …'],['s2why','Station 2 · Was zeigen die Schnipsel?'],
+  ['s3obs','Station 3 · Tests mit der Glimmlampe'],['s3why','Station 3 · Zwei Ladungsarten'],['s3app','Station 3 · Glimmlampe ablesen'],
+  ['s4gaps','Station 4 · Merksatz-Lückentext'],['s4pulli','Station 4 · Pullover'],['s5a','Profi · Wasserstrahl'],['s5b','Profi · Bildschirm'],['s5c','Profi · Türklinke']];
+function who(){var r=st.res||{};return {name:r.name||'',klasse:r.klasse||''};}
+function resText(){
+  var r=who(),d=new Date(),L=[];
+  function a(q,v){return v==null?'(keine Antwort)':q.o[v]+(v===q.a?'  ✓':'  ✗');}
+  function segs(list,store){list.forEach(function(q){var t=q.q.replace(/<[^>]+>/g,'');L.push('  '+t+' → '+(store[q.id]==null?'(keine Antwort)':q.o[store[q.id]]+(store[q.id]===q.a?'  ✓':'  ✗')));});}
+  L.push('LADUNGSLABOR 1 · Wie verhalten sich ruhende Ladungen? · Was passiert beim Reiben?');
+  L.push('Name: '+r.name+'    Klasse: '+r.klasse+'    Datum: '+d.toLocaleDateString('de-DE')+', '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+  var n=st.done.filter(Boolean).length;
+  L.push('Geschafft ('+n+' von '+STATIONS.length+'): '+STATIONS.map(function(x,i){return x.name+(st.done[i]?' ✓':' –');}).join(' | '));
+  L.push('');
+  L.push('MEINE VERMUTUNG (Auswahl): '+(st.guess?guessName(st.guess):'keine gewählt')+(st.guess==='B'?'  → stimmt':'  → richtig ist B'));
+  L.push('MEINE VERMUTUNG (Text): '+((st.s1.verm||'').trim()||'(leer)'));
+  L.push('');
+  L.push('STATION 1 · Luftballon');segs(OBS1,st.s1.obs);L.push('');
+  L.push('STATION 2 · Papierschnipsel');segs(OBS2,st.s2.obs);L.push('  Je – desto: '+a(QMORE,st.s2.more));L.push('  Was zeigen die Schnipsel: '+a(QWHY2,st.s2.why));L.push('');
+  L.push('STATION 3 · Glimmlampe');segs(OBS3,st.s3.obs);L.push('  Schluss: '+a(QWHY3,st.s3.why));L.push('  Ablesen: '+a(QAPP,st.s3.app));L.push('');
+  L.push('STATION 4 · Merksatz');
+  if(st.s4.ok){GAPS.forEach(function(g,i){L.push('  '+(i+1)+'. '+g.pre+g.o[g.a]+g.post);});}else L.push('  (Lückentext noch nicht gelöst)');
+  L.push('  Antwort auf die Leitfrage: '+((st.s4.refl||'').trim()||'(leer)'));
+  L.push('  Pullover: '+a(PULLI,st.s4.pulli));
+  L.push('');
+  L.push('VERSUCHE (wie oft geprüft bzw. eine Antwort gewählt wurde, bis es richtig war)');
+  var tot=0,first=0;
+  TL.forEach(function(x){var t=st.tries[x[0]];var pro=x[0].charAt(1)==='5';if(!t){if(!pro)L.push('  '+x[1]+': nicht bearbeitet');return;}if(!pro){tot++;if(t.first)first++;}
+    L.push('  '+x[1]+': '+t.n+(t.n===1?' Versuch':' Versuche')+(t.ok?(t.first?'  → beim 1. Versuch richtig':'  → gelöst'):'  → noch nicht gelöst'));});
+  L.push('  Beim 1. Versuch richtig: '+first+' von '+tot+' bearbeiteten Aufgaben');
+  var mins0=st.t0?Math.round((Date.now()-st.t0)/60000):null;if(mins0!=null)L.push('  Bearbeitungszeit seit dem Start: '+mins0+' min');
+  L.push('  „Neu starten“ gedrückt (auf diesem Gerät): '+resets()+'-mal');
+  var hk=Object.keys(st.help||{});L.push('  Lösung anzeigen benutzt: '+(hk.length?hk.length+'-mal ('+hk.map(function(k){var x=TL.filter(function(t){return t[0]===k;})[0];return x?x[1]:k;}).join('; ')+')':'nein'));
+  L.push('');
+  L.push('PROFI-ZUSATZ ★');
+  P5.forEach(function(x){var v=st.s5[x.id];L.push('  '+x.title+': '+(v==null?'(nicht bearbeitet)':x.o[v]+(v===x.a?'  ✓':'  ✗')));});
+  var data={v:1,app:'LL1',name:r.name,klasse:r.klasse,ts:Date.now(),done:st.done,guess:st.guess,verm:st.s1.verm||'',obs:{s1:st.s1.obs,s2:st.s2.obs,s3:st.s3.obs},
+    mc:{s2more:st.s2.more,s2why:st.s2.why,s3why:st.s3.why,s3app:st.s3.app,s4pulli:st.s4.pulli},tries:st.tries,refl:st.s4.refl||'',s5:st.s5,help:hk,mins:mins0,resets:resets(),nlog:st.log.length};
+  var json=JSON.stringify(data);
+  L.push('');L.push('Die beiden folgenden Zeilen sind für die Auswertung. Bitte nicht verändern.');
+  L.push('#DATEN '+json);L.push('#PRUEF '+fnv('LL1-v1|'+json));
+  return L.join('\r\n');
+}
+function resFile(){var r=who();var n=((r.name||'Name')+'_'+(r.klasse||'')).replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,'_').replace(/_+$/,'');return 'Ladungslabor-1_'+n+'.txt';}
+function resultsHTML(){var r=st.res||{};
+  return '<div class="merk stack" id="resBox" style="border-color:var(--accent)"><h3 style="color:var(--ink)">Ergebnisse speichern</h3>'+
+   '<p class="muted">Prüft eure Namen und speichert die Ergebnisse als Textdatei. Ladet die Datei danach bei <b>IServ</b> in der Aufgabe „'+APP+'“ hoch.</p>'+
+   '<div class="row"><label for="resName">Name(n)</label><input class="num" style="width:13em;text-align:left;padding-inline:8px" id="resName" autocomplete="off" value="'+esc(r.name)+'">'+
+   '<label for="resKlasse">Klasse</label><input class="num" style="width:5em" id="resKlasse" autocomplete="off" value="'+esc(r.klasse)+'"></div>'+
+   '<div class="row"><button class="btn pri" type="button" id="resSave">Als Textdatei speichern</button><button class="btn sec" type="button" id="resCopy">Text kopieren</button><button class="btn tip" type="button" id="resShow">Text anzeigen</button></div>'+
+   '<p class="fb" id="resFb"></p><textarea class="free" id="resTxt" rows="12" readonly hidden style="font-family:var(--f-mono);font-size:13px"></textarea>'+
+   '<p class="muted"><b>So geht’s bei IServ:</b> Aufgaben → „'+APP+'“ öffnen → Datei hochladen → in <b>Dateien → Downloads</b> die gespeicherte Datei auswählen → Abgeben.</p></div>';}
+function bindResults(){
+  if(!$('resBox'))return;st.res=st.res||{};
+  function upd(){st.res.name=$('resName').value.trim();st.res.klasse=$('resKlasse').value.trim();save();if(!$('resTxt').hidden)$('resTxt').value=resText();}
+  $('resName').addEventListener('input',upd);$('resKlasse').addEventListener('input',upd);
+  function msg(ok,t){var f=$('resFb');f.className='fb '+(ok?'ok':'bad');f.textContent=t;}
+  function need(){if(!st.res.name){msg(false,'Tragt zuerst eure Namen ein.');$('resName').focus();return false;}return true;}
+  $('resShow').addEventListener('click',function(){var t=$('resTxt');t.hidden=!t.hidden;if(!t.hidden)t.value=resText();this.textContent=t.hidden?'Text anzeigen':'Text ausblenden';});
+  $('resCopy').addEventListener('click',function(){if(!need())return;var txt=resText(),t=$('resTxt');t.hidden=false;t.value=txt;$('resShow').textContent='Text ausblenden';
+    function sel(){t.focus();t.select();msg(true,'Text markiert. Kopiere ihn mit Strg+C (Tablet: gedrückt halten → Kopieren).');}
+    try{navigator.clipboard.writeText(txt).then(function(){msg(true,'Kopiert! Ihr könnt den Text jetzt bei IServ einfügen.');},sel);}catch(e){sel();}});
+  $('resSave').addEventListener('click',function(){if(!need())return;var txt=resText(),name=resFile();
+    function blobSave(){try{var b=new Blob(['﻿'+txt],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},4000);
+      msg(true,'Datei „'+name+'“ wird gespeichert. Falls nichts passiert: „Text kopieren“ benutzen.');}catch(e){msg(false,'Speichern klappt hier nicht. Benutzt „Text kopieren“.');}}
+    var c=window.claude;
+    if(c&&c.use){c.use('downloads').then(function(d){if(!d){blobSave();return;}
+        d.save({filename:name,data:txt}).then(function(){msg(true,'Gespeichert als „'+name+'“. Jetzt bei IServ hochladen!');},function(err){
+          if(err&&err.code==='declined')msg(false,'Speichern abgebrochen. Ihr könnt es nochmal versuchen.');else msg(false,'Speichern klappt hier nicht. Benutzt „Text kopieren“.');});},blobSave);}
+    else blobSave();});
+}
+
+/* ---------- Start: Name und Klasse ---------- */
+function startDialog(){var r=st.res||{};if(r.name&&r.klasse)return;
+  var ov=document.createElement('div');ov.className='abg-ov';
+  ov.innerHTML='<div class="abg-box" role="dialog" aria-modal="true" aria-labelledby="stH"><p class="eyebrow">Wie verhalten sich ruhende Ladungen? · Stunde 1</p><h2 id="stH">Willkommen im Ladungslabor!</h2>'+
+    '<p>Heute findest du heraus, was beim Reiben passiert. Alle Versuche machst du hier im Modell.</p>'+
+    '<p class="muted">Arbeitet ihr zu zweit? Dann tragt beide Namen ein.</p>'+
+    '<div class="abg-row"><label for="stName">Name(n)</label><input class="abg-in" id="stName" autocomplete="off" style="width:14em" value="'+esc(r.name)+'" placeholder="Vorname N."></div>'+
+    '<div class="abg-row"><label for="stKl">Klasse</label><input class="abg-in" id="stKl" autocomplete="off" style="width:6em" value="'+esc(r.klasse)+'" placeholder="7a"></div>'+
+    '<div class="abg-row"><button class="abg-copy" type="button" id="stGo">Los geht’s</button></div><p class="abg-fb bad" id="stFb"></p></div>';
+  document.body.appendChild(ov);var n=ov.querySelector('#stName'),k=ov.querySelector('#stKl');setTimeout(function(){n.focus();},30);
+  function go(){var nm=n.value.trim(),kl=k.value.trim();if(!nm){ov.querySelector('#stFb').textContent='Bitte trage deinen Namen ein.';n.focus();return;}if(!kl){ov.querySelector('#stFb').textContent='Bitte trage deine Klasse ein.';k.focus();return;}
+    st.res=st.res||{};st.res.name=nm;st.res.klasse=kl;save();ov.remove();}
+  ov.querySelector('#stGo').addEventListener('click',go);[n,k].forEach(function(el){el.addEventListener('keydown',function(e){if(e.key==='Enter')go();});});}
+
+/* ---------- Ablauf ---------- */
+var lastScene=null;
+function render(){var sc=scene();if(sc!==lastScene){freshModel();if(sc==='lamp'){M.rod.y=M.rod.ty=150;}lastScene=sc;}
+  renderRoute();renderCtl();[r1,r2,r3,r4,r5][st.station]();resize();}
+$('reset').addEventListener('click',function(){var b=this;if(!b._armed){b._armed=true;b.textContent='Wirklich alles löschen?';setTimeout(function(){b._armed=false;b.textContent='Neu starten';},3500);return;}
+  try{localStorage.setItem(RKEY,String(resets()+1));localStorage.removeItem(KEY);}catch(e){}location.reload();});
+window.addEventListener('resize',resize);
+if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)');if(mq.addEventListener)mq.addEventListener('change',draw);}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
+load();if(!st.t0){st.t0=Date.now();save();}if(!unlocked(st.station))st.station=0;
+render();startDialog();
+
+
+/* ---------- Ergebnisse abgeben (jederzeit) ---------- */
+(function(){
+  var APP='Ladungslabor 1';
+  var AKEY=(typeof KEY!=='undefined'?KEY:APP)+'-abgabe';
+  function lget(){try{return JSON.parse(localStorage.getItem(AKEY)||'{}')||{};}catch(e){return {};}}
+  function lset(o){try{localStorage.setItem(AKEY,JSON.stringify(o));}catch(e){}}
+  var A=lget();if(!A.t0){A.t0=Date.now();lset(A);}
+  function e(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+  
+  function abgText(A){st.res=st.res||{};st.res.name=A.name;st.res.klasse=A.klasse;try{save();}catch(err){}
+    var n=0;STATIONS.forEach(function(x,i){if(st.done[i])n++;});
+    return resText().replace('\r\nGeschafft: ','\r\nGeschafft ('+n+' von '+STATIONS.length+'): ');}
+
+  var ov=document.createElement('div');ov.className='abg-ov';ov.hidden=true;
+  ov.innerHTML='<div class="abg-box" role="dialog" aria-modal="true" aria-labelledby="abgH">'+
+    '<h2 id="abgH">Ergebnisse abgeben</h2>'+
+    '<ol><li>Tragt eure <b>Namen</b> und eure <b>Klasse</b> ein.</li>'+
+    '<li>Tippt auf <b>„Datei herunterladen“</b>. Auf dem iPad fragt Safari nach: Tippt auf <b>„Laden“</b>. Die Datei liegt dann in der App <b>Dateien</b> im Ordner <b>Downloads</b>.</li>'+
+    '<li>Öffnet <b>IServ → Aufgaben → „'+e(APP)+'“</b>, ladet die Datei hoch (aus <b>Dateien → Downloads</b>) und tippt auf <b>Abgeben</b>.</li></ol>'+
+    '<p class="muted">Ihr könnt auch abgeben, wenn ihr noch nicht fertig seid. In der Datei steht, wie weit ihr gekommen seid.</p>'+
+    '<div class="abg-row"><label for="abgName">Namen</label><input class="abg-in" id="abgName" autocomplete="off" style="width:12em">'+
+    '<label for="abgKl">Klasse</label><input class="abg-in" id="abgKl" autocomplete="off" style="width:5em"></div>'+
+    '<div class="abg-row"><button class="abg-copy" type="button" id="abgDl">Datei herunterladen</button>'+
+    '<button class="abg-close" type="button" id="abgClose">Schließen</button></div>'+
+    '<p class="muted" style="font-size:14px">Klappt das Herunterladen nicht? Dann <button type="button" id="abgCopy" style="background:none;border:none;padding:0;color:var(--blue);text-decoration:underline;font:inherit;cursor:pointer">kopiert den Text</button> und fragt eure Lehrkraft.</p>'+
+    '<p class="abg-fb" id="abgFb"></p>'+
+    '<textarea class="abg-txt" id="abgTxt" rows="10" readonly hidden></textarea></div>';
+  document.body.appendChild(ov);
+  var $n=ov.querySelector('#abgName'),$k=ov.querySelector('#abgKl'),$t=ov.querySelector('#abgTxt'),$f=ov.querySelector('#abgFb');
+  function msg(ok,t){$f.className='abg-fb '+(ok?'ok':'bad');$f.textContent=t;}
+  function open(){A=lget();if(!A.name&&typeof st!=='undefined'&&st.res&&st.res.name){A.name=st.res.name;A.klasse=A.klasse||st.res.klasse||'';}$n.value=A.name||'';$k.value=A.klasse||'';$t.hidden=true;msg(true,'');ov.hidden=false;setTimeout(function(){($n.value?ov.querySelector('#abgDl'):$n).focus();},30);}
+  function close(){ov.hidden=true;}
+  function upd(){A.name=$n.value.trim();A.klasse=$k.value.trim();lset(A);}
+  $n.addEventListener('input',upd);$k.addEventListener('input',upd);
+  ov.querySelector('#abgClose').addEventListener('click',close);
+  ov.addEventListener('click',function(ev){if(ev.target===ov)close();});
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&!ov.hidden)close();});
+  ov.querySelector('#abgCopy').addEventListener('click',function(){
+    upd();if(!A.name){msg(false,'Tragt zuerst eure Namen ein.');$n.focus();return;}
+    var txt=abgText(A);$t.value=txt;
+    function sel(){$t.hidden=false;$t.focus();$t.select();msg(true,'Der Text ist markiert. Tippe lange darauf und wähle „Kopieren“.');}
+    try{navigator.clipboard.writeText(txt).then(function(){msg(true,'Text kopiert.');},sel);}catch(err){sel();}
   });
-  const stop=()=>{dragging=false;cloth.style.transition="transform .18s ease";};
-  svg.addEventListener("pointerup",stop); svg.addEventListener("pointercancel",stop);
-  function resetSnips(){snips.forEach(s=>s.el.style.transform="");}
-  q("#selRod").onchange=e=>{st.rod=e.target.value;st.strokes=0;paint();resetSnips();msg.textContent="Neuer Stab – noch nicht gerieben.";};
-  q("#selCloth").onchange=e=>{st.cloth=e.target.value;st.strokes=0;paint();resetSnips();msg.textContent="Neues Tuch – noch nicht gerieben.";};
-  const so=q("#selObj"); if(so) so.onchange=e=>{st.obj=e.target.value;paint();msg.textContent=st.obj==="tuch"?"Jetzt wird das Tuch an die Glimmlampe gehalten.":"Jetzt wird der Stab getestet.";};
-  q("#bReset").onclick=()=>{st.strokes=0;st.obj="stab";if(so)so.value="stab";paint();resetSnips();glowOff();msg.textContent="Alles zurückgesetzt. Der Stab ist nicht geladen.";};
-  function glowOff(){["#eL","#eR"].forEach(id=>{const e=q(id);if(e){e.setAttribute("fill","var(--muted)");e.style.filter="";}});}
-  q("#bTest").onclick=()=>{
-    const s=sign();
-    if(mode==="snip"){
-      if(!s){msg.textContent="Nichts passiert. Die Schnipsel bleiben liegen.";snips.forEach(o=>{o.el.style.transform="translateY(-3px)";setTimeout(()=>o.el.style.transform="",180);});return;}
-      const n=Math.min(snips.length,4+st.strokes);
-      snips.forEach((o,i)=>{ if(i%Math.max(1,Math.round(snips.length/n))===0){const dy=93-o.y+(i%3)*2;o.el.style.transform=`translateY(${dy}px) rotate(${(i%5-2)*12}deg)`;}});
-      msg.textContent="Die Papierschnipsel springen hoch und bleiben am Stab hängen!";
-      return;
-    }
-    glowOff();
-    if(!s){msg.textContent="Die Glimmlampe bleibt dunkel.";return;}
-    const el=q(s<0?"#eR":"#eL");
-    el.setAttribute("fill","var(--glow)"); el.style.filter="drop-shadow(0 0 6px #FF7A1A) drop-shadow(0 0 12px #FF7A1A)";
-    const where=s<0?"an der Seite zum Gegenstand":"an der Seite zur Hand";
-    msg.textContent=`Kurzes Aufleuchten ${where}! Danach ist der Gegenstand entladen – zum erneuten Testen wieder reiben.`;
-    st.strokes=0; paint();
-    clearTimeout(st.glowTimer); st.glowTimer=setTimeout(glowOff,900);
-  };
-  paint();
-}
-
-/* ---------- Bausteine ---------- */
-function seg(name,opts,val){
-  return `<div class="seg" role="radiogroup">${opts.map((o,i)=>`<input type="radio" id="${name}_${i}" name="${name}" value="${esc(o)}" ${val===o?"checked":""}><label for="${name}_${i}">${esc(o)}</label>`).join("")}</div>`;
-}
-const pics={
-  tuer:`<svg width="120" height="70" viewBox="0 0 120 70" aria-hidden="true"><rect x="20" y="6" width="44" height="60" rx="3" fill="none" stroke="var(--muted)" stroke-width="3"/><rect x="48" y="34" width="22" height="6" rx="3" fill="var(--muted)"/><path d="M78 26 l10 8 -8 4 12 10" fill="none" stroke="var(--glow)" stroke-width="3" stroke-linejoin="round"/><circle cx="100" cy="40" r="9" fill="#E9B98F"/></svg>`,
-  ballon:`<svg width="120" height="70" viewBox="0 0 120 70" aria-hidden="true"><ellipse cx="38" cy="30" rx="20" ry="24" fill="var(--pos)"/><path d="M38 54 q-4 8 2 14" stroke="var(--muted)" fill="none" stroke-width="2"/><circle cx="88" cy="44" r="16" fill="#E9B98F"/><path d="M76 34 q-8 -10 -14 -6 M82 30 q-6 -14 -14 -12 M90 28 q-2 -14 -12 -16 M96 30 q4 -12 -4 -18" stroke="#6B4A2B" fill="none" stroke-width="2"/></svg>`,
-  pulli:`<svg width="120" height="70" viewBox="0 0 120 70" aria-hidden="true"><path d="M30 14 l20 -6 h20 l20 6 l12 18 -12 6 v28 h-60 v-28 l-12 -6z" fill="var(--neg)" opacity=".8"/><path d="M58 20 l6 6 -5 3 7 7" stroke="var(--glow)" fill="none" stroke-width="3"/><path d="M80 18 l5 5 -4 2 5 6" stroke="var(--glow)" fill="none" stroke-width="2.5"/></svg>`
-};
-
-/* ---------- Schritte ---------- */
-const R={};
-R.start=()=>`
- <p style="font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--glow);font-weight:700">Wie verhalten sich ruhende Ladungen? · Stunde 1</p>
- <h1>Was passiert beim Reiben?</h1>
- <p class="lead">Heute untersuchst du, was mit Gegenständen passiert, wenn man sie aneinander reibt. Du arbeitest mit deiner Gruppe und hältst alles hier fest.</p>
- <div class="card">
-   <div class="row">
-     <div><label for="nm">Dein Name</label><input type="text" id="nm" autocomplete="off" value="${esc(S.name)}" placeholder="Vorname + erster Buchstabe Nachname"></div>
-     <div><label for="kl">Klasse</label><input type="text" id="kl" autocomplete="off" value="${esc(S.klasse)}" placeholder="z. B. 7c"></div>
-     <div><label for="gr">Gruppe</label><input type="text" id="gr" autocomplete="off" value="${esc(S.gruppe)}" placeholder="z. B. 3"></div>
-   </div>
-   <p class="note bad" id="startmsg" hidden>Bitte trage zuerst deinen Namen ein.</p>
- </div>
- <div class="note info">Am Ende lädst du eine Datei herunter und lädst sie bei IServ hoch. Deine Eingaben bleiben gespeichert, auch wenn du die Seite neu lädst.</div>`;
-R.start.after=()=>{["nm","kl","gr"].forEach(id=>$("#"+id).oninput=e=>{S[{nm:"name",kl:"klasse",gr:"gruppe"}[id]]=e.target.value;save();drawProg();});};
-
-R.phaen=()=>`
- <h2>Kennst du das?</h2>
- <p>Tippe alles an, was du selbst schon erlebt hast.</p>
- <div class="grid3">
-  ${[["tuer","Du fasst eine Türklinke oder Autotür an und bekommst einen kleinen „Schlag“."],
-     ["ballon","Ein Luftballon wird an den Haaren gerieben. Danach stehen die Haare ab."],
-     ["pulli","Beim Ausziehen eines Pullovers knistert es. Im Dunkeln sieht man kleine Funken."]]
-    .map(([k,t])=>`<button class="scene" data-k="${k}" aria-pressed="${S.kennt.includes(k)}"><span class="pic">${pics[k]}</span><span>${t}</span><span class="tag">${S.kennt.includes(k)?"Kenne ich":"Antippen, wenn du das kennst"}</span></button>`).join("")}
- </div>
- <div class="q"><small>Unsere Leitfrage</small>Was passiert mit Gegenständen, wenn man sie aneinander reibt?</div>`;
-R.phaen.after=()=>{document.querySelectorAll(".scene").forEach(b=>b.onclick=()=>{
-  const k=b.dataset.k; S.kennt=S.kennt.includes(k)?S.kennt.filter(x=>x!==k):[...S.kennt,k]; save(); render();});};
-
-R.vermut=()=>`
- <h2>Deine Vermutung</h2>
- <div class="q"><small>Leitfrage</small>Was passiert mit Gegenständen, wenn man sie aneinander reibt?</div>
- <div class="card">
-  <p>Wähle einen Satzanfang und schreibe deine Vermutung zu Ende. Es gibt hier kein Richtig oder Falsch.</p>
-  <div class="chips">${["Ich vermute, dass beim Reiben …","Ich glaube, die Gegenstände …","Ich denke, es hat mit … zu tun, weil …"].map(c=>`<button class="chip" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>
-  <label for="vm">Meine Vermutung</label>
-  <textarea id="vm" placeholder="Ich vermute, dass …, weil …">${esc(S.vermutung)}</textarea>
- </div>
- <details><summary>Ich habe keine Idee – Hilfe</summary>
-  <p>Denk an die Bilder von eben: Die Haare bewegen sich zum Ballon hin. Es knistert. Etwas verändert sich am Gegenstand. Was könnte das sein? Vielleicht kennst du das Wort „Strom“ oder „Elektrizität“ …</p>
- </details>`;
-R.vermut.after=()=>{
-  const ta=$("#vm"); ta.oninput=()=>{S.vermutung=ta.value;save();};
-  document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{const t=c.dataset.c.replace(" …","").replace(/ …/g," ");ta.value=t+" ";S.vermutStart=c.dataset.c;S.vermutung=ta.value;save();ta.focus();});
-};
-
-const V1ROWS=[["kw","Kunststoffstab mit Wolltuch gerieben"],["gs","Glasstab mit Seidentuch gerieben"],["k0","Kunststoffstab NICHT gerieben (Vergleich)"]];
-R.v1=()=>`
- <h2>Versuch 1: Papierschnipsel</h2>
- <div class="card">
-  <h3>So geht's</h3>
-  <ol class="steps">
-   <li>Legt kleine Papierschnipsel auf den Tisch.</li>
-   <li>Haltet den <b>ungeriebenen</b> Kunststoffstab knapp über die Schnipsel. Beobachtet.</li>
-   <li>Reibt den Kunststoffstab kräftig mit dem <b>Wolltuch</b> (ca. 10-mal). Haltet ihn wieder knapp über die Schnipsel.</li>
-   <li>Wiederholt das mit dem Glasstab und dem <b>Seidentuch</b>.</li>
-  </ol>
-  <details><summary>Tipp, wenn es nicht klappt</summary><p>Reibt fester und immer in eine Richtung. Die Schnipsel müssen sehr klein und trocken sein. Haltet den Stab nur 1–2 cm über die Schnipsel. Fasst die geriebene Stelle nicht mit der Hand an.</p></details>
- </div>
- <div class="card"><h3>Eure Beobachtungen</h3>
-  <div class="tablewrap"><table class="obs"><thead><tr><th>Versuch</th><th>Was passiert mit den Schnipseln?</th></tr></thead><tbody>
-  ${V1ROWS.map(([k,t])=>`<tr><td>${t}</td><td>${seg("v1_"+k,["werden angezogen","werden nicht angezogen"],S.v1[k])}</td></tr>`).join("")}
-  </tbody></table></div>
- </div>
- <details id="d1"><summary>Kein Material da? Simulation öffnen</summary><div id="lab1"></div></details>`;
-R.v1.after=()=>{
-  V1ROWS.forEach(([k])=>document.querySelectorAll(`input[name="v1_${k}"]`).forEach(r=>r.onchange=()=>{S.v1[k]=r.value;save();}));
-  const d=$("#d1"); let built=false;
-  d.addEventListener("toggle",()=>{if(d.open&&!built){built=true;S.sim=true;save();makeLab($("#lab1"),"snip");}});
-};
-
-const V2ROWS=[["k","Kunststoffstab (mit Wolle gerieben)"],["g","Glasstab (mit Seide gerieben)"],["t","Wolltuch (nach dem Reiben) – Zusatz"]];
-const V2OPT=["leuchtet an der Seite zum Gegenstand","leuchtet an der Seite zur Hand","leuchtet nicht"];
-R.v2=()=>`
- <h2>Versuch 2: Die Glimmlampe</h2>
- <div class="safety"><b>Sicherheit:</b> Die Glimmlampe ist nur für diesen Versuch. Haltet sie niemals an eine Steckdose oder an ein Kabel!</div>
- <div class="card">
-  <h3>So geht's</h3>
-  <ol class="steps">
-   <li>Eine Person hält die Glimmlampe an einem Ende fest. Am besten mit der Hand abdunkeln.</li>
-   <li>Reibt den Kunststoffstab mit dem Wolltuch. Berührt mit dem anderen Ende der Glimmlampe den Stab.</li>
-   <li>Schaut genau hin: <b>Auf welcher Seite</b> leuchtet die Glimmlampe kurz auf?</li>
-   <li>Wiederholt das mit dem Glasstab und dem Seidentuch.</li>
-  </ol>
-  <p><i>Zusatz für Schnelle:</i> Testet auch das Wolltuch direkt nach dem Reiben.</p>
-  <details><summary>Tipp, wenn ihr nichts seht</summary><p>Das Leuchten ist sehr kurz und schwach. Dunkelt die Glimmlampe mit der Hand ab und schaut direkt auf die Drähte im Glas. Reibt danach immer wieder neu, denn nach dem Aufleuchten ist der Stab entladen.</p></details>
- </div>
- <div class="card"><h3>Eure Beobachtungen</h3>
-  <div class="tablewrap"><table class="obs"><thead><tr><th>Getestet</th><th>Die Glimmlampe …</th></tr></thead><tbody>
-  ${V2ROWS.map(([k,t])=>`<tr><td>${t}</td><td>${seg("v2_"+k,V2OPT,S.v2[k])}</td></tr>`).join("")}
-  </tbody></table></div>
- </div>
- <details id="d2"><summary>Kein Material da? Simulation öffnen</summary><div id="lab2"></div></details>`;
-R.v2.after=()=>{
-  V2ROWS.forEach(([k])=>document.querySelectorAll(`input[name="v2_${k}"]`).forEach(r=>r.onchange=()=>{S.v2[k]=r.value;save();}));
-  const d=$("#d2"); let built=false;
-  d.addEventListener("toggle",()=>{if(d.open&&!built){built=true;S.sim=true;save();makeLab($("#lab2"),"lamp");}});
-};
-
-const FOLG=[
- ["Die Glimmlampe leuchtet immer auf der gleichen Seite. Es gibt also nur eine Art von Ladung.",false,"Schau noch einmal in eure Tabelle: Beim Kunststoffstab und beim Glasstab leuchtet die Lampe auf verschiedenen Seiten."],
- ["Die Glimmlampe leuchtet je nach Stab auf verschiedenen Seiten. Es gibt also zwei verschiedene Arten von Ladung.",true,"Genau! Der Kunststoffstab und der Glasstab sind unterschiedlich geladen. Man nennt die beiden Ladungsarten positiv (+) und negativ (–)."],
- ["Die Glimmlampe zeigt, wie warm der Stab beim Reiben geworden ist.",false,"Die Glimmlampe misst keine Temperatur. Sie zeigt an, ob ein Gegenstand elektrisch geladen ist."]
-];
-R.folger=()=>{
-  const t1=S.v1.kw, t2=S.v2.k, t3=S.v2.g;
-  return `
- <h2>Was zeigen eure Versuche?</h2>
- <div class="card"><h3>Eure Ergebnisse auf einen Blick</h3>
-  <div class="sum">
-   <dt>Kunststoff + Wolle</dt><dd>${esc(t1||"–")} · Glimmlampe ${esc(t2||"–")}</dd>
-   <dt>Glas + Seide</dt><dd>${esc(S.v1.gs||"–")} · Glimmlampe ${esc(t3||"–")}</dd>
-   <dt>Stab nicht gerieben</dt><dd>${esc(S.v1.k0||"–")}</dd>
-  </div>
- </div>
- <div class="card">
-  <h3>Welche Schlussfolgerung passt zu euren Beobachtungen?</h3>
-  <div class="opt" id="fopt">${FOLG.map((f,i)=>`<button data-i="${i}" class="${S.folger===i?(f[1]?"sel-ok":"sel-bad"):""}">${esc(f[0])}</button>`).join("")}</div>
-  <div id="ffb" aria-live="polite">${S.folger!==null?`<p class="note ${FOLG[S.folger][1]?"ok":"bad"}">${esc(FOLG[S.folger][2])}</p>`:""}</div>
- </div>
- <div class="note info">Besprecht eure Ergebnisse gleich mit der Klasse: Haben alle Gruppen das Gleiche beobachtet?</div>`;};
-R.folger.after=()=>{document.querySelectorAll("#fopt button").forEach(b=>b.onclick=()=>{S.folger=+b.dataset.i;S.folgerTries++;save();render();});};
-
-/* Lückentext */
-const GAPS=[
- {s:0,ans:"reibt",opts:["drückt","reibt","erwärmt"]},
- {s:0,ans:"geladen",opts:["magnetisch","leitend","geladen"]},
- {s:1,ans:"ziehen",opts:["ziehen","stoßen","drücken"]},
- {s:1,ans:"an",opts:["weg","an","zusammen"]},
- {s:2,ans:"Glimmlampe",opts:["Lupe","Glimmlampe","Kompass"]},
- {s:3,ans:"zwei",opts:["eine","zwei","drei"]},
- {s:3,ans:"negative",opts:["negative","warme","magnetische"]},
- {s:4,ans:"entgegengesetzt",opts:["gleich","entgegengesetzt","gar nicht"]}
-];
-function gapSel(i){
-  const g=GAPS[i]; const cur=(S.lt.last||[])[i]||"";
-  const cls=S.lt.checked? (cur===g.ans?"right":"wrong"):"";
-  return `<select class="gap ${cls}" data-g="${i}" aria-label="Lücke ${i+1}"><option value="">— wählen —</option>${g.opts.map(o=>`<option ${cur===o?"selected":""}>${o}</option>`).join("")}</select>`;
-}
-R.lueck=()=>{
-  const done=S.lt.solved||S.lt.shown;
-  return `
- <h2>Merksätze vervollständigen</h2>
- <p>Wähle in jeder Lücke das passende Wort. Dann auf „Prüfen“ tippen.</p>
- <div class="card sent">
-  <p>1. Wenn man zwei verschiedene Gegenstände aneinander ${gapSel(0)}, werden sie elektrisch ${gapSel(1)}.</p>
-  <p>2. Elektrisch geladene Gegenstände ${gapSel(2)} leichte Gegenstände wie Papierschnipsel ${gapSel(3)}.</p>
-  <p>3. Mit einer ${gapSel(4)} kann man nachweisen, ob ein Gegenstand elektrisch geladen ist.</p>
-  <p>4. Es gibt ${gapSel(5)} Arten von Ladung: positive (+) und ${gapSel(6)} (–) Ladung.</p>
-  <p>5. Beim Reiben werden der Stab und das Tuch ${gapSel(7)} geladen.</p>
- </div>
- <div class="row" style="flex:0 0 auto">
-  <button class="btn glow" id="chk" style="flex:0 0 auto">Prüfen</button>
-  ${S.lt.tries>=2&&!done?'<button class="btn" id="sol" style="flex:0 0 auto">Lösung zeigen</button>':""}
- </div>
- <div id="ltfb" aria-live="polite">${ltFeedback()}</div>`;};
-function ltFeedback(){
-  if(!S.lt.checked) return "";
-  const n=(S.lt.last||[]).filter((v,i)=>v===GAPS[i].ans).length;
-  if(S.lt.shown) return `<p class="note info">Die Lösung ist jetzt eingetragen. Lies die Sätze noch einmal genau durch und tippe auf „Weiter“.</p>`;
-  if(n===GAPS.length) return `<p class="note ok">Alle ${n} Lücken richtig! Super. Tippe auf „Weiter“.</p>`;
-  return `<p class="note bad">${n} von ${GAPS.length} Lücken sind richtig. Die gelben Lücken stimmen noch nicht – probier es noch einmal.${S.lt.tries>=2?" Du kannst dir jetzt auch die Lösung anzeigen lassen.":""}</p>`;
-}
-R.lueck.after=()=>{
-  document.querySelectorAll("select.gap").forEach(s=>s.onchange=()=>{S.lt.last=S.lt.last||Array(GAPS.length).fill("");S.lt.last[+s.dataset.g]=s.value;S.lt.checked=false;s.classList.remove("right","wrong");save();});
-  $("#chk").onclick=()=>{
-    S.lt.last=S.lt.last||Array(GAPS.length).fill("");
-    S.lt.tries++; S.lt.checked=true;
-    const res=S.lt.last.map((v,i)=>v===GAPS[i].ans);
-    if(!S.lt.first) S.lt.first=res;
-    if(res.every(Boolean)) S.lt.solved=true;
-    save(); render();
-  };
-  const sol=$("#sol"); if(sol) sol.onclick=()=>{S.lt.last=GAPS.map(g=>g.ans);S.lt.shown=true;S.lt.checked=true;save();render();};
-};
-
-R.merk=()=>`
- <h2>Das haben wir heute gelernt</h2>
- <p>Schreibe die Merksätze sauber in dein Heft.</p>
- <div class="merk">
-  <h3>Merksätze: Elektrische Aufladung durch Reibung</h3>
-  <ol>
-   <li>Wenn man zwei verschiedene Gegenstände aneinander reibt, werden sie elektrisch geladen.</li>
-   <li>Elektrisch geladene Gegenstände ziehen leichte Gegenstände wie Papierschnipsel an.</li>
-   <li>Mit einer Glimmlampe kann man nachweisen, ob ein Gegenstand elektrisch geladen ist.</li>
-   <li>Es gibt zwei Arten von Ladung: positive (+) und negative (–) Ladung.</li>
-   <li>Beim Reiben werden der Stab und das Tuch entgegengesetzt geladen.</li>
-  </ol>
- </div>
- <div class="card"><h3>Merkhilfe Glimmlampe</h3>
-  <div class="rule">
-   <div class="n"><b>Leuchtet die Seite zum Gegenstand,</b><br>dann ist der Gegenstand <b>negativ (–)</b> geladen.<br><small>Beispiel: Kunststoffstab mit Wolle</small></div>
-   <div class="p"><b>Leuchtet die Seite zur Hand,</b><br>dann ist der Gegenstand <b>positiv (+)</b> geladen.<br><small>Beispiel: Glasstab mit Seide</small></div>
-  </div>
- </div>`;
-
-const QUIZ=[
- {q:"Nach dem Ausziehen des Pullovers knistert es und deine Haare stehen ab. Woran liegt das?",o:["Der Pullover ist zu warm geworden.","Pullover und Haare wurden durch Reibung elektrisch geladen.","Die Haare sind magnetisch."],a:1,e:"Beim Ausziehen reibt der Pullover an den Haaren. Dabei werden beide elektrisch geladen."},
- {q:"Du reibst einen Luftballon an deinem Pulli. Danach bleibt er an der Wand kleben. Was zeigt das?",o:["Der Ballon ist klebrig geworden.","Geladene Gegenstände ziehen andere Gegenstände an.","Die Wand ist magnetisch."],a:1,e:"Der Ballon ist durch das Reiben geladen. Geladene Gegenstände ziehen andere Gegenstände an – hier die Wand."},
- {q:"Die Glimmlampe leuchtet an der Seite, die zum Stab zeigt. Wie ist der Stab geladen?",o:["positiv (+)","negativ (–)","gar nicht"],a:1,e:"Leuchtet die Seite zum Gegenstand, ist der Gegenstand negativ geladen."},
- {q:"Die Glimmlampe leuchtet an der Seite, an der deine Hand ist. Wie ist der Gegenstand geladen?",o:["positiv (+)","negativ (–)","gar nicht"],a:0,e:"Leuchtet die Seite zur Hand, ist der Gegenstand positiv geladen."},
- {q:"Ein Kunststoffstab wurde nicht gerieben. Was passiert an der Glimmlampe?",o:["Sie leuchtet an der Seite zum Stab.","Sie leuchtet an der Seite zur Hand.","Sie leuchtet nicht."],a:2,e:"Ohne Reiben ist der Stab nicht geladen. Deshalb leuchtet die Glimmlampe nicht."},
- {q:"Ein Kunststoffstab wird mit Wolle gerieben und ist danach negativ geladen. Wie ist das Wolltuch geladen?",o:["auch negativ (–)","positiv (+)","gar nicht"],a:1,e:"Stab und Tuch werden beim Reiben entgegengesetzt geladen. Ist der Stab negativ, ist das Tuch positiv."}
-];
-R.quiz=()=>`
- <h2>Physik im Alltag</h2>
- <p>Beantworte die Fragen. Nach jeder Antwort siehst du eine Erklärung.</p>
- ${QUIZ.map((x,i)=>{const ans=S.quiz[i];const answered=ans!==undefined;
-  return `<div class="card"><h3>${i+1}. ${esc(x.q)}</h3><div class="opt">${x.o.map((o,j)=>{
-    let c=""; if(answered){ if(j===ans) c=(j===x.a?"sel-ok":"sel-bad"); else if(j===x.a) c="show-ok"; }
-    return `<button data-q="${i}" data-o="${j}" class="${c}" ${answered?"disabled":""}>${esc(o)}</button>`;}).join("")}</div>
-    ${answered?`<p class="note ${ans===x.a?"ok":"bad"}">${ans===x.a?"Richtig! ":"Nicht ganz. "}${esc(x.e)}</p>`:""}</div>`;}).join("")}
- <p class="note info">${Object.keys(S.quiz).length} von ${QUIZ.length} Fragen beantwortet · ${QUIZ.filter((x,i)=>S.quiz[i]===x.a).length} richtig</p>`;
-R.quiz.after=()=>{document.querySelectorAll(".opt button[data-q]").forEach(b=>b.onclick=()=>{S.quiz[+b.dataset.q]=+b.dataset.o;save();const y=window.scrollY;render();window.scrollTo({top:y});});};
-
-const CAN=["Ich kann erklären, was beim Reiben von zwei Gegenständen passiert.","Ich kann mit einer Glimmlampe nachweisen, ob ein Gegenstand geladen ist.","Ich kann die zwei Arten von Ladung nennen."];
-const AMP=[["grün","sicher","var(--ok)"],["gelb","teilweise","var(--warn)"],["rot","noch nicht","var(--pos)"]];
-R.exit=()=>`
- <h2>Exit-Ticket</h2>
- <div class="card"><h3>Wie sicher bist du?</h3>
-  ${CAN.map((c,i)=>`<div style="display:flex;flex-direction:column;gap:6px"><p>${c}</p><div class="ampel">${AMP.map((a,j)=>`<input type="radio" id="am${i}_${j}" name="am${i}" value="${j}" ${S.exit.a[i]===j?"checked":""}><label for="am${i}_${j}"><i style="background:${a[2]}"></i>${a[1]}</label>`).join("")}</div></div>`).join("")}
- </div>
- <div class="card"><label for="fr">Was möchtest du noch wissen? Was war unklar?</label>
-  <textarea id="fr" placeholder="Ich frage mich, warum …">${esc(S.exit.frage)}</textarea></div>`;
-R.exit.after=()=>{
-  CAN.forEach((_,i)=>document.querySelectorAll(`input[name="am${i}"]`).forEach(r=>r.onchange=()=>{S.exit.a[i]=+r.value;save();}));
-  $("#fr").oninput=e=>{S.exit.frage=e.target.value;save();};
-};
-
-function packet(){
-  S.end=new Date().toISOString(); save();
-  const ltFirst=S.lt.first?S.lt.first.filter(Boolean).length:0;
-  const quizOk=QUIZ.filter((x,i)=>S.quiz[i]===x.a).length;
-  return {v:1,app:S.app,name:S.name.trim(),klasse:S.klasse.trim(),gruppe:S.gruppe.trim(),start:S.start,end:S.end,
-    visited:S.visited.length,steps:STEPS.length,kennt:S.kennt,vermutung:S.vermutung,v1:S.v1,v2:S.v2,sim:S.sim,
-    folger:S.folger,folgerOk:S.folger===1,folgerTries:S.folgerTries,
-    lt:{tries:S.lt.tries,first:S.lt.first,firstScore:ltFirst,max:GAPS.length,solved:!!S.lt.solved,shown:!!S.lt.shown},
-    quiz:QUIZ.map((x,i)=>S.quiz[i]===undefined?null:S.quiz[i]),quizOk,quizMax:QUIZ.length,
-    exit:S.exit};
-}
-function encode(o){return "LL1-"+btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
-R.abgabe=()=>{
-  const p=packet(); const code=encode(p);
-  const miss=[];
-  if(!p.vermutung.trim()) miss.push("Vermutung");
-  if(Object.keys(p.v1).length<3) miss.push("Versuch 1 (Tabelle)");
-  if(Object.keys(p.v2).length<2) miss.push("Versuch 2 (Tabelle)");
-  if(p.quiz.some(v=>v===null)) miss.push("Quiz");
-  if(p.exit.a.some(v=>v===null)) miss.push("Exit-Ticket");
-  return `
- <h2>Abgabe</h2>
- <div class="card"><h3>Deine Zusammenfassung</h3>
-  <dl class="sum">
-   <dt>Name</dt><dd>${esc(p.name||"–")}</dd>
-   <dt>Klasse / Gruppe</dt><dd>${esc(p.klasse||"–")} / ${esc(p.gruppe||"–")}</dd>
-   <dt>Merksätze</dt><dd>${p.lt.firstScore} von ${p.lt.max} beim ersten Versuch</dd>
-   <dt>Quiz</dt><dd>${p.quizOk} von ${p.quizMax} richtig</dd>
-  </dl>
-  ${miss.length?`<p class="note bad">Noch offen: ${miss.join(", ")}. Du kannst oben über die Fortschrittsleiste zurückspringen.</p>`:`<p class="note ok">Alles erledigt!</p>`}
- </div>
- <div class="card"><h3>So gibst du ab</h3>
-  <ol class="steps">
-   <li>Tippe auf <b>„Datei herunterladen“</b>. Auf dem iPad fragt Safari nach: Tippe auf <b>„Laden“</b>. Die Datei liegt dann in der App <b>Dateien</b> im Ordner <b>Downloads</b>.</li>
-   <li>Öffne in IServ die Aufgabe <b>„Ladungslabor Stunde 1“</b>.</li>
-   <li>Lade die Datei hoch (aus <b>Dateien → Downloads</b>) und tippe auf <b>Abgeben</b>.</li>
-  </ol>
-  <div class="row" style="flex:0 0 auto">
-   <button class="btn glow" id="dl" style="flex:0 0 auto">Datei herunterladen</button>
-   <button class="btn" id="cp" style="flex:0 0 auto">Notfall: Code kopieren</button>
-  </div>
-  <p id="cpmsg" aria-live="polite"></p>
-  <div class="code" id="code">${code}</div>
- </div>`;};
-R.abgabe.after=()=>{
-  const code=$("#code").textContent;
-  $("#cp").onclick=()=>{
-    const ok=()=>{$("#cpmsg").innerHTML='<span class="note ok" style="display:block">Kopiert! Jetzt in IServ einfügen.</span>';};
-    const fail=()=>{const r=document.createRange();r.selectNodeContents($("#code"));const s=getSelection();s.removeAllRanges();s.addRange(r);
-      $("#cpmsg").innerHTML='<span class="note bad" style="display:block">Automatisches Kopieren klappt hier nicht. Der Code ist markiert – kopiere ihn selbst (gedrückt halten → Kopieren).</span>';};
-    try{navigator.clipboard.writeText(code).then(ok,fail);}catch(e){fail();}
-  };
-  $("#dl").onclick=()=>{
-    try{const p=packet();const b=new Blob([JSON.stringify(p,null,1)],{type:"application/json"});
-      const a=document.createElement("a");a.href=URL.createObjectURL(b);
-      a.download=`Ladungslabor_S1_${(p.name||"Name").replace(/[^\wäöüÄÖÜß-]+/g,"_")}${p.klasse?"_"+p.klasse.replace(/[^\wäöüÄÖÜß-]+/g,""):""}.json`;document.body.appendChild(a);a.click();a.remove();
-      $("#cpmsg").innerHTML='<span class="note ok" style="display:block">Die Datei „'+a.download+'“ wird heruntergeladen. Lade sie jetzt in IServ bei der Aufgabe „Ladungslabor Stunde 1“ hoch. Falls kein Download startet: „Notfall: Code kopieren“ benutzen und deine Lehrkraft fragen.</span>';
-    }catch(e){$("#cpmsg").innerHTML='<span class="note bad" style="display:block">Speichern geht hier nicht. Nutze „Code kopieren“.</span>';}
-  };
-};
-
-function render(){
-  const s=STEPS[S.step];
-  app.innerHTML=`<section class="step">${R[s.id]()}</section>`;
-  if(R[s.id].after) R[s.id].after();
-  drawProg();
-}
-render();
+  ov.querySelector('#abgDl').addEventListener('click',function(){
+    upd();if(!A.name){msg(false,'Tragt zuerst eure Namen ein.');$n.focus();return;}
+    var txt=abgText(A).replace(/\r?\n/g,'\r\n'),name=resFile();
+    try{var bl=new Blob(['\ufeff'+txt],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(bl),a=document.createElement('a');
+      a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},10000);
+      msg(true,'Die Datei „'+name+'“ wird heruntergeladen. Ladet sie jetzt in IServ bei der Aufgabe „'+APP+'“ hoch.');}
+    catch(err){msg(false,'Herunterladen klappt hier nicht. Kopiert stattdessen den Text.');}
+  });
+  document.getElementById('abgBtn').addEventListener('click',open);
 })();
+})();
+
 </script>
 </body>
 </html>
