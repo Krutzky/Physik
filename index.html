@@ -92,7 +92,7 @@
 <body>
 <main>
   <h1>Physik-Apps</h1>
-  <p class="sub">Wähle dein Thema.</p>
+  <p class="sub">Wähle deinen Bereich.</p>
 
   <div id="liste"></div>
 
@@ -105,6 +105,9 @@
 <script>
   /* =========================================================
      HIER BEARBEITEN: Für jede neue App eine Zeile ergänzen.
+     - jahrgang: z. B. "Jahrgang 7" (muss in JAHRGAENGE stehen).
+              Weglassen = Thema steht direkt auf der Startseite
+              (z. B. Sicherheitsunterweisung).
      - thema: Überschrift (z. B. die Unterrichtseinheit)
      - nr:    Nummer auf der Kachel
      - titel: Name der App
@@ -116,18 +119,20 @@
      - ab:    (optional) Datum, ab dem die App automatisch frei ist,
               z. B. ab: "2026-11-03". Davor steht sie auf „folgt bald“.
      ========================================================= */
+  const JAHRGAENGE = ["Jahrgang 7", "Jahrgang 8", "Jahrgang 10"];
+
   const apps = [
     { thema: "Sicherheitsunterweisung", nr: 1, titel: "Sicherheits-Check", info: "Sicher experimentieren im Physikraum", datei: "Sicherheitsunterweisung/sicherheitscheck.html" },
-    { thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 1, titel: "Linsen-Labor", info: "Linsen und Lichtstrahlen", datei: "Wie%20kann%20man%20Lichtstrahlen%20beeinflussen/linsenlabor.html" },
-    { thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 2, titel: "Linsen-Messlabor", info: "Wovon hängen Lage und Größe des Bildes ab?", datei: "Wie%20kann%20man%20Lichtstrahlen%20beeinflussen/linsenmesslabor.html" },
-    { thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 3, titel: "Optik-Werkstatt", info: "Wie helfen uns Linsen beim Sehen?", datei: "Wie%20kann%20man%20Lichtstrahlen%20beeinflussen/optikwerkstatt.html" },
-    { thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 4, titel: "Regenbogen-Labor", info: "Wie entsteht ein Regenbogen?", datei: "Wie%20kann%20man%20Lichtstrahlen%20beeinflussen/regenbogenlabor.html" },
-    { thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 5, titel: "Lichtschutz-Labor", info: "Wann wird Licht gefährlich?", datei: "Wie%20kann%20man%20Lichtstrahlen%20beeinflussen/lichtschutzlabor.html" },
-    { thema: "Wie verhalten sich ruhende Ladungen?", nr: 1, titel: "Ladungslabor 1", info: "Was passiert beim Reiben?", datei: "Wie%20verhalten%20sich%20ruhende%20Ladungen/ladungslabor-1.html" },
-    { thema: "Wie verhalten sich ruhende Ladungen?", nr: 2, titel: "Ladungslabor 2", info: "Welche Kräfte wirken zwischen Ladungen?", datei: "Wie%20verhalten%20sich%20ruhende%20Ladungen/ladungslabor-2.html" },
-    { thema: "Wie verhalten sich ruhende Ladungen?", nr: 3, titel: "Ladungslabor 3", info: "Woher kommt die Ladung?", datei: "Wie%20verhalten%20sich%20ruhende%20Ladungen/ladungslabor-3.html" },
-    { thema: "Wie verhalten sich ruhende Ladungen?", nr: 4, titel: "Ladungslabor 4", info: "Warum leiten Metalle?", datei: "Wie%20verhalten%20sich%20ruhende%20Ladungen/ladungslabor-4.html" },
-    // { thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 6, titel: "Name der nächsten App", info: "", datei: "" },
+    { jahrgang: "Jahrgang 7", thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 1, titel: "Linsen-Labor", info: "Linsen und Lichtstrahlen", datei: "Jahrgang%207/Wie%20kann%20man%20Lichtstrahlen%20beeinflussen/linsenlabor.html" },
+    { jahrgang: "Jahrgang 7", thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 2, titel: "Linsen-Messlabor", info: "Wovon hängen Lage und Größe des Bildes ab?", datei: "Jahrgang%207/Wie%20kann%20man%20Lichtstrahlen%20beeinflussen/linsenmesslabor.html" },
+    { jahrgang: "Jahrgang 7", thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 3, titel: "Optik-Werkstatt", info: "Wie helfen uns Linsen beim Sehen?", datei: "Jahrgang%207/Wie%20kann%20man%20Lichtstrahlen%20beeinflussen/optikwerkstatt.html" },
+    { jahrgang: "Jahrgang 7", thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 4, titel: "Regenbogen-Labor", info: "Wie entsteht ein Regenbogen?", datei: "Jahrgang%207/Wie%20kann%20man%20Lichtstrahlen%20beeinflussen/regenbogenlabor.html" },
+    { jahrgang: "Jahrgang 7", thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 5, titel: "Lichtschutz-Labor", info: "Wann wird Licht gefährlich?", datei: "Jahrgang%207/Wie%20kann%20man%20Lichtstrahlen%20beeinflussen/lichtschutzlabor.html" },
+    { jahrgang: "Jahrgang 7", thema: "Wie verhalten sich ruhende Ladungen?", nr: 1, titel: "Ladungslabor 1", info: "Was passiert beim Reiben?", datei: "Jahrgang%207/Wie%20verhalten%20sich%20ruhende%20Ladungen/ladungslabor-1.html" },
+    { jahrgang: "Jahrgang 7", thema: "Wie verhalten sich ruhende Ladungen?", nr: 2, titel: "Ladungslabor 2", info: "Welche Kräfte wirken zwischen Ladungen?", datei: "Jahrgang%207/Wie%20verhalten%20sich%20ruhende%20Ladungen/ladungslabor-2.html" },
+    { jahrgang: "Jahrgang 7", thema: "Wie verhalten sich ruhende Ladungen?", nr: 3, titel: "Ladungslabor 3", info: "Woher kommt die Ladung?", datei: "Jahrgang%207/Wie%20verhalten%20sich%20ruhende%20Ladungen/ladungslabor-3.html" },
+    { jahrgang: "Jahrgang 7", thema: "Wie verhalten sich ruhende Ladungen?", nr: 4, titel: "Ladungslabor 4", info: "Warum leiten Metalle?", datei: "Jahrgang%207/Wie%20verhalten%20sich%20ruhende%20Ladungen/ladungslabor-4.html" },
+    // { jahrgang: "Jahrgang 7", thema: "Wie kann man Lichtstrahlen beeinflussen?", nr: 6, titel: "Name der nächsten App", info: "", datei: "" },
   ];
 
   const liste = document.getElementById("liste");
@@ -138,10 +143,12 @@
     return !!app.datei && app.frei !== false &&
       (!app.ab || new Date() >= new Date(app.ab + "T00:00:00"));
   }
-
-  // Themen in der Reihenfolge, in der sie in der Liste vorkommen
-  const themen = [];
-  apps.forEach(app => { if (!themen.includes(app.thema)) themen.push(app.thema); });
+  function themenVon(liste) {
+    const t = [];
+    liste.forEach(a => { if (!t.includes(a.thema)) t.push(a.thema); });
+    return t;
+  }
+  const ohneJahrgang = apps.filter(a => !a.jahrgang);
 
   function kachel(nr, titel, info, href, offen) {
     const el = document.createElement(offen ? "a" : "div");
@@ -156,48 +163,75 @@
     el.querySelector(".info").textContent = info;
     return el;
   }
+  function ueberschrift(t) {
+    const h = document.createElement("h2"); h.textContent = t; liste.appendChild(h);
+  }
+  function zurueckLink(text, href) {
+    const a = document.createElement("a");
+    a.href = href; a.className = "zurueck"; a.textContent = "‹ " + text;
+    liste.appendChild(a);
+  }
+  function anzahl(n, eins, viele) { return n + " " + (n === 1 ? eins : viele); }
+  function hashFuer(o) {
+    return "#" + Object.keys(o).map(k => k + "=" + encodeURIComponent(o[k])).join("&");
+  }
 
+  // Ebene 1: Startseite
   function zeigeUebersicht() {
     liste.innerHTML = "";
     sub.textContent = subStart;
-    if (!themen.length) {
-      liste.innerHTML = '<p class="sub">Hier erscheinen bald die ersten Apps.</p>';
-      return;
-    }
-    const h = document.createElement("h2");
-    h.textContent = "Themen";
-    liste.appendChild(h);
-    themen.forEach((thema, i) => {
-      const alle = apps.filter(a => a.thema === thema);
-      const offen = alle.filter(istOffen).length;
-      const info = offen
-        ? offen + (offen === 1 ? " App" : " Apps")
-        : "folgt bald";
-      liste.appendChild(kachel(i + 1, thema, info, "#thema=" + encodeURIComponent(thema), offen > 0));
+    ueberschrift("Übersicht");
+    let nr = 1;
+    themenVon(ohneJahrgang).forEach(thema => {
+      const offen = ohneJahrgang.filter(a => a.thema === thema && istOffen(a)).length;
+      liste.appendChild(kachel(nr++, thema, offen ? anzahl(offen, "App", "Apps") : "folgt bald",
+        hashFuer({ t: thema }), offen > 0));
+    });
+    JAHRGAENGE.forEach(jg => {
+      const jgApps = apps.filter(a => a.jahrgang === jg);
+      const offen = jgApps.filter(istOffen).length;
+      const nt = themenVon(jgApps.filter(istOffen)).length;
+      liste.appendChild(kachel(nr++, jg, offen ? anzahl(nt, "Thema", "Themen") : "folgt bald",
+        hashFuer({ j: jg }), offen > 0));
     });
   }
 
-  function zeigeThema(thema) {
+  // Ebene 2: Themen eines Jahrgangs
+  function zeigeJahrgang(jg) {
+    liste.innerHTML = "";
+    sub.textContent = "Wähle dein Thema.";
+    zurueckLink("Übersicht", "#");
+    ueberschrift(jg);
+    const jgApps = apps.filter(a => a.jahrgang === jg);
+    themenVon(jgApps).forEach((thema, i) => {
+      const offen = jgApps.filter(a => a.thema === thema && istOffen(a)).length;
+      liste.appendChild(kachel(i + 1, thema, offen ? anzahl(offen, "App", "Apps") : "folgt bald",
+        hashFuer({ j: jg, t: thema }), offen > 0));
+    });
+  }
+
+  // Ebene 3: Apps eines Themas
+  function zeigeThema(jg, thema) {
     liste.innerHTML = "";
     sub.textContent = "Wähle eine App.";
-    const zurueck = document.createElement("a");
-    zurueck.href = "#";
-    zurueck.className = "zurueck";
-    zurueck.textContent = "‹ Alle Themen";
-    liste.appendChild(zurueck);
-    const h = document.createElement("h2");
-    h.textContent = thema;
-    liste.appendChild(h);
-    apps.filter(a => a.thema === thema).forEach(app => {
+    if (jg) zurueckLink(jg, hashFuer({ j: jg }));
+    else zurueckLink("Übersicht", "#");
+    ueberschrift(thema);
+    apps.filter(a => (a.jahrgang || null) === (jg || null) && a.thema === thema).forEach(app => {
       const offen = istOffen(app);
       liste.appendChild(kachel(app.nr, app.titel, offen ? (app.info || "") : "folgt bald", app.datei, offen));
     });
   }
 
   function anzeigen() {
-    const m = location.hash.match(/^#thema=(.*)$/);
-    const thema = m ? decodeURIComponent(m[1]) : null;
-    if (thema && themen.includes(thema)) zeigeThema(thema);
+    const p = {};
+    location.hash.replace(/^#/, "").split("&").forEach(x => {
+      const k = x.indexOf("=");
+      if (k > 0) p[x.slice(0, k)] = decodeURIComponent(x.slice(k + 1));
+    });
+    const jg = JAHRGAENGE.includes(p.j) ? p.j : null;
+    if (p.t && apps.some(a => (a.jahrgang || null) === jg && a.thema === p.t)) zeigeThema(jg, p.t);
+    else if (jg) zeigeJahrgang(jg);
     else zeigeUebersicht();
     window.scrollTo(0, 0);
   }
