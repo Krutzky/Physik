@@ -191,6 +191,7 @@ table.mt td.v b{font-size:16px}
 .tick{color:var(--ok);font-weight:700}
 .chip{display:inline-block;border:1.5px solid var(--line);border-radius:999px;padding:1px 8px;font-size:13px;margin:2px 0;color:var(--ink-soft)}
 .chip.on{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);font-weight:700}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft)}
 .seg.long{display:flex;flex-direction:column;border-radius:12px}
 .seg.long button{text-align:left;border-top:1px solid var(--line);font-weight:600}
 .seg.long button:first-child{border-top:none}
@@ -280,7 +281,7 @@ function vtext(x,w,lines){var y=w*0.1;lines.forEach(function(l){x.font=(l.b?'bol
    Gittermodell: positive Atomrümpfe sitzen fest im Gitter, freie Elektronen bewegen sich dazwischen.
    Metallstab: Elektronen werden von einem negativen Stab weggeschoben (Influenz), zusätzliche Elektronen verteilen sich und fließen über die Hand ab. */
 var M={},T=0;
-var MATS=[['cu','Kupfer',1,'#C8763C'],['fe','Eisen',1,'#8A8F98'],['al','Aluminium',1,'#B9C0CB'],['ku','Kunststoff',0,'#E8C33A'],['ho','Holz (trocken)',0,'#A9784A'],['gl','Glas',0,'#A8DDEA']];
+var MATS=[['cu','Kupfer',1,'#C8763C'],['fe','Eisen',1,'#8A8F98'],['al','Aluminium',1,'#B9C0CB'],['ag','Silber',1,'#D9DDE3'],['ku','Kunststoff',0,'#E8C33A'],['ho','Holz (trocken)',0,'#A9784A'],['gl','Glas',0,'#A8DDEA'],['gu','Gummi',0,'#3A3D45']];
 function mat(k){return MATS.filter(function(m){return m[0]===k;})[0]||MATS[0];}
 var TR=17,Q0=6,BN=24,GRID=[],RUMPF=[];
 (function(){for(var r=0;r<4;r++)for(var c=0;c<7;c++)GRID.push([110+c*70,92+r*66]);
@@ -334,7 +335,7 @@ function drawTest(c,lupe){var t=M.test,m=mat(t.mat),cx=110,cy=RODY,R=52,L=rodL()
       else{c.fillStyle='rgba(0,0,0,.25)';c.beginPath();c.arc(x,y,3,0,7);c.fill();c.fillStyle='#2F6FD3';c.beginPath();c.arc(x+Math.cos(T*3+k+r2)*4.5,y+Math.sin(T*3+k+r2)*4.5,1.6,0,7);c.fill();}}
     if(m[2])for(var j=0;j<40;j++){var xx=L+((j*37+T*30*((j%3)+1))%RODLEN),yy=RODY+Math.sin(j*1.7+T*2)*12;c.fillStyle='#2F6FD3';c.beginPath();c.arc(xx,yy,1.8,0,7);c.fill();}
     c.restore();}
-  else{c.font='bold 15px '+ff();c.fillStyle=t.mat==='cu'||t.mat==='ho'?'#fff':'#1A1F36';c.textAlign='center';c.textBaseline='middle';c.fillText(m[1]+'stab',L+RODLEN/2,RODY);}
+  else{c.font='bold 15px '+ff();c.fillStyle=t.mat==='cu'||t.mat==='ho'||t.mat==='gu'?'#fff':'#1A1F36';c.textAlign='center';c.textBaseline='middle';c.fillText(m[1]+'stab',L+RODLEN/2,RODY);}
   t.fly.forEach(function(f){electron(c,L+f.t*(RODLEN+20),RODY+Math.sin(f.t*12)*5,8);});
   hand(c,L+RODLEN-6,RODY);
   if(!lupe){c.font='bold 15px '+ff();c.fillStyle=col('ink');c.textAlign='center';c.textBaseline='bottom';c.fillText('geladene Kugel',cx,cy-R-10);
@@ -454,7 +455,7 @@ function renderCtl(){var sc=scene(),h='';var eb=$('ctlCard').querySelector('.eye
       '<div class="row"><button class="btn sec" type="button" id="gTr">'+(G.track?'Verfolgen beenden':'Ein Elektron verfolgen')+'</button></div>';}
   else{var B=M.bar;h='<div class="ctlrow"><span>VERSUCH</span>'+segHTML('sMode',[['near','A · Stab nähern'],['touch','B · Berühren und ableiten']],B.mode)+'</div>';
     if(B.mode==='near')h+=slider('K','STAB NÄHER HERANBRINGEN',B.k+' von 4',0,4,1,B.k,'weit weg','ganz nah','g');
-    else h+='<div class="row"><button class="btn pri" type="button" id="bT"'+(B.ball>2?'':' disabled')+'>Mit der geladenen Kugel berühren</button></div><div class="row"><button class="btn sec" type="button" id="bH">'+(B.hand?'Hand wegnehmen':'Metall mit der Hand anfassen')+'</button><button class="btn tip" type="button" id="bR">Neu aufladen</button></div>';}
+    else h+='<div class="row"><button class="btn pri" type="button" id="bT"'+(B.ball>2?'':' disabled')+'>Mit der geladenen Kugel berühren</button></div><div class="row"><button class="btn sec" type="button" id="bH">'+(B.hand?'Hand wegnehmen':'Metall mit der Hand anfassen')+'</button></div><div class="row"><button class="btn sec" type="button" id="bK"'+(B.ball>2?' disabled':'')+'>Kugel nachladen</button><button class="btn tip" type="button" id="bR">Alles zurücksetzen</button></div>';}
   h+='<p class="status info" id="stat"></p>';
   $('ctl').innerHTML=h;
   if(sc==='test'){Array.prototype.forEach.call(document.querySelectorAll('#mats .opt'),function(b){b.addEventListener('click',function(){M.test.mat=b.dataset.mat;M.test.on=false;M.test.conn=0;M.test.q=Q0;M.test.fly=[];renderCtl();kick();});});
@@ -466,6 +467,7 @@ function renderCtl(){var sc=scene(),h='';var eb=$('ctlCard').querySelector('.eye
     if(M.bar.mode==='near')bindSlider('K',function(){return M.bar.k;},function(v){M.bar.k=v;},1,0,4,' von 4');
     else{$('bT').addEventListener('click',function(){var B=M.bar;if(B.ball<=2)return;B.touch=1;for(var i=0;i<4;i++)B.el.push({x:210,y:180+i*6,u:0,v:Math.random(),ph:Math.random()*6.28,leave:false});B.ball-=4;assignU();st.s3.touched=true;save();renderCtl();kick();});
       $('bH').addEventListener('click',function(){M.bar.hand=!M.bar.hand;if(M.bar.hand){st.s3.handed=true;save();}renderCtl();kick();});
+      $('bK').addEventListener('click',function(){M.bar.ball=Q0;renderCtl();kick();});
       $('bR').addEventListener('click',function(){var B=M.bar;B.ball=Q0;B.hand=false;B.el=B.el.filter(function(e){return !e.leave;}).slice(0,BN);assignU();renderCtl();kick();});}}
   updStatus();
 }
@@ -493,18 +495,27 @@ var OBS1=MATS.map(function(m){return {id:m[0],q:'<b>'+m[1]+'</b>',o:['leitet','l
 var QGEM={q:'Was haben alle Stoffe gemeinsam, die in deinem Test leiten?',o:['Es sind Metalle.','Sie sind alle besonders schwer.','Sie sind alle durchsichtig.'],a:0,
   ok:'Genau! Alle Metalle in deinem Test leiten. Aber warum? Das findest du in Station 2 heraus.',bad:['','Ist Eisen schwerer als Glas? Schau lieber, aus welcher Stoffgruppe die Leiter sind.','Ist Kupfer durchsichtig? Schau, aus welcher Stoffgruppe die Leiter sind.']};
 var FACH1='<div class="merk"><h3>Fachbegriffe</h3><ul style="margin:0;padding-left:1.2em"><li><span class="k">Leiter</span>: Durch diese Stoffe kann elektrische Ladung fließen, zum Beispiel durch Metalle.</li><li><span class="k">Isolatoren</span> (Nichtleiter): Durch diese Stoffe fließt keine Ladung, zum Beispiel durch Kunststoff und Glas.</li></ul></div>';
-function r1(){var s=st.s1,tested=s.tested||{},n=MATS.filter(function(m){return tested[m[0]];}).length;
+var PRED=MATS.map(function(m){return {id:'p'+m[0],k:m[0],q:'<b>'+m[1]+'</b>',o:['leitet','leitet nicht'],a:m[2]?0:1};});
+function predScore(){var p=st.s1.pred||{};return PRED.filter(function(q){return p[q.id]===q.a;}).length;}
+function r1(){var s=st.s1,tested=s.tested||{},n=MATS.filter(function(m){return tested[m[0]];}).length;s.pred=s.pred||{};
   if(needGuess()){$('task').innerHTML='<div><p class="eyebrow">Station 1 · Leiter-Test</p><h2>Welche Stoffe leiten Ladung?</h2></div><p class="note">Lege zuerst oben im Kasten <b>„Bevor du startest“</b> deine Vermutung fest. Danach erscheint das Steuerpult und es geht los.</p>';return;}
   var g='<div class="guess"><p class="eyebrow pro">Deine Vermutung</p><p><b>'+guessName(st.guess)+'</b>. In Station 4 prüfst du sie.</p></div>';
-  var info='<div class="stack"><p>Die Kugel ist <b>negativ</b> geladen: Sie hat Elektronen zu viel. Du hältst einen Stab in der Hand und legst ihn an die Kugel. Fließen die Elektronen über den Stab und deine Hand ab? <b>Teste alle sechs Stoffe!</b></p>'+
-    '<p class="hint"><b>Getestet:</b> '+n+' von 6 '+MATS.map(function(m){return '<span class="chip'+(tested[m[0]]?' on':'')+'">'+m[1]+'</span>';}).join(' ')+'</p></div>';
-  var obs='<div class="stack"><p class="eyebrow">Teil A · Trage dein Ergebnis ein</p>'+segQHTML(OBS1,s.obs,s.obsOk)+(s.obsOk?'':'<div class="row"><button class="btn pri" type="button" id="c1">Prüfen</button></div>')+'<p class="fb" id="fb1"></p></div>';
+  var pred='<div class="stack"><p class="eyebrow">Teil A · Sage vorher</p><p>Was glaubst du: Welche Stoffe leiten die Ladung, welche nicht? Entscheide <b>vor dem Testen</b>. Für jede richtige Vorhersage gibt es einen Punkt.</p>'+segQHTML(PRED,s.pred,s.predOk)+
+    (s.predOk?'':'<div class="row"><button class="btn pri" type="button" id="c1p">Vorhersage festlegen</button></div>')+'<p class="fb" id="fb1p"></p></div>';
+  var info=s.predOk?'<div class="stack"><p class="eyebrow">Teil B · Teste im Modell</p><p>Die Kugel ist <b>negativ</b> geladen: Sie hat Elektronen zu viel. Du hältst einen Stab in der Hand und legst ihn an die Kugel. Fließen die Elektronen über den Stab und deine Hand ab? <b>Teste alle acht Stoffe!</b></p>'+
+    '<p class="hint"><b>Getestet:</b> '+n+' von 8 '+MATS.map(function(m){return '<span class="chip'+(tested[m[0]]?' on':'')+'">'+m[1]+'</span>';}).join(' ')+'</p></div>':'';
+  var obs=s.predOk?'<div class="stack"><p class="eyebrow">Teil C · Trage dein Ergebnis ein</p>'+segQHTML(OBS1,s.obs,s.obsOk)+(s.obsOk?'':'<div class="row"><button class="btn pri" type="button" id="c1">Prüfen</button></div>')+'<p class="fb" id="fb1"></p>'+
+    (s.obsOk?'<p class="win"><b>Deine Vorhersage: '+predScore()+' von 8 Punkten.</b> '+(predScore()===8?'Perfekt vorhergesagt!':'Vergleiche: Bei welchen Stoffen hast du dich geirrt?')+'</p>':'')+'</div>':'';
   var gem=s.obsOk?FACH1+mcHTML('gem',QGEM.q,QGEM.o,s.gem,QGEM.a):'';
-  $('task').innerHTML=g+'<div><p class="eyebrow">Station 1 · Leiter-Test</p><h2>Welche Stoffe leiten Ladung?</h2></div>'+info+obs+gem+
-    (st.done[0]?'<p class="win"><b>Klasse!</b> Metalle sind Leiter. Kunststoff, Holz und Glas sind Isolatoren.</p>':'')+'<div class="row">'+nextBtn(0)+'</div>';
-  bindSegQ(s.obs,function(){return s.obsOk;},OBS1);
-  if(!s.obsOk)$('c1').addEventListener('click',function(){if(checkSegQ(OBS1,s.obs,'s1obs','fb1',r1)){s.obsOk=true;save();r1();}});
-  else helpMsg('fb1','Richtig getestet! Über Kupfer, Eisen und Aluminium fließen die Elektronen ab.');
+  $('task').innerHTML=g+'<div><p class="eyebrow">Station 1 · Leiter-Test</p><h2>Welche Stoffe leiten Ladung?</h2></div>'+pred+info+obs+gem+
+    (st.done[0]?'<p class="win"><b>Klasse!</b> Metalle sind Leiter. Kunststoff, Holz, Glas und Gummi sind Isolatoren.</p>':'')+'<div class="row">'+nextBtn(0)+'</div>';
+  if(s.predOk)PRED.forEach(function(q){var g=document.querySelector('[data-sq="'+q.id+'"]');if(g)Array.prototype.forEach.call(g.children,function(b){if(b.className==='ok')b.className='sel';});});
+  bindSegQ(s.pred,function(){return s.predOk;},PRED);
+  if(!s.predOk)$('c1p').addEventListener('click',function(){var miss=PRED.filter(function(q){return s.pred[q.id]==null;}).length,fb=$('fb1p');if(miss){fb.className='fb bad';fb.textContent='Entscheide dich noch bei '+miss+' Stoff'+(miss>1?'en':'')+'.';return;}s.predOk=true;save();r1();});
+  else helpMsg('fb1p','Vorhersage gespeichert. Jetzt wird getestet!');
+  if(s.predOk){bindSegQ(s.obs,function(){return s.obsOk;},OBS1);
+    if(!s.obsOk)$('c1').addEventListener('click',function(){if(checkSegQ(OBS1,s.obs,'s1obs','fb1',r1)){s.obsOk=true;save();r1();}});
+    else helpMsg('fb1','Richtig getestet! Über Kupfer, Eisen, Aluminium und Silber fließen die Elektronen ab.');}
   if(s.obsOk){bindMC('gem',QGEM.a,'s1gem',QGEM.ok,QGEM.bad,function(){s.gemOk=true;finish(0);save();r1();showFb('gem',true,QGEM.ok);},function(j){s.gem=j;});if(s.gemOk)showFb('gem',true,QGEM.ok);}
   bindNext();
 }
@@ -519,16 +530,28 @@ var OBS2=[
 var FACH2='<div class="merk"><h3>Das Gittermodell der Metalle</h3><ul style="margin:0;padding-left:1.2em"><li>Jedes Metallatom gibt ein Elektron aus seiner Hülle ab. Übrig bleibt ein positiv geladener <span class="k">Atomrumpf</span>.</li><li>Die Atomrümpfe sitzen regelmäßig angeordnet in einem <span class="k">Gitter</span>.</li><li>Die abgegebenen Elektronen heißen <span class="k">freie Elektronen</span>. Sie bewegen sich zwischen den Atomrümpfen.</li></ul></div>';
 var QRUMPF={q:'Warum ist ein Atomrumpf positiv geladen?',o:['Das Metallatom hat ein Elektron abgegeben. Jetzt hat es mehr + als –.','Das Metallatom hat ein Proton dazubekommen.','Im Gitter entsteht neue positive Ladung.'],a:0,
   ok:'Richtig! Das abgegebene Elektron gehört jetzt zu keinem Atom mehr fest. Es ist ein freies Elektron.',bad:['','Protonen sitzen fest im Kern. Sie wandern nicht von Atom zu Atom.','Ladung entsteht nicht neu. Was hat das Atom abgegeben?']};
+var CMP2=[
+  {id:'e',q:'5. Ein Kupferatom hat 29 Protonen und 29 Elektronen. Es gibt ein Elektron ab. Der Atomrumpf hat dann …',o:['29 Protonen und 28 Elektronen (Ladung +1)','28 Protonen und 29 Elektronen (Ladung –1)','29 Protonen und 29 Elektronen (Ladung 0)'],a:0,w:'Nur ein Elektron geht weg. Die Protonen bleiben im Kern.'},
+  {id:'f',q:'6. In einem Stück Metall sind 28 Atomrümpfe. Es ist ungeladen. Wie viele freie Elektronen gibt es?',o:['28','0','56'],a:0,w:'Ungeladen heißt: gleich viele + und –. Schau ins Ladungskonto.'},
+  {id:'g',q:'7. Warum leitet Kunststoff keine Ladung?',o:['Seine Elektronen sind fest an die Atome gebunden.','Er hat gar keine Elektronen.','Seine Atome sind zu groß.'],a:0,w:'Stelle Kunststoff ein: Was machen die Elektronen dort?'}
+];
 function r2(){var s=st.s2;
   var obs='<div class="stack"><p class="eyebrow">Teil A · Mit der Lupe ins Metall</p><p>Schalte im Steuerpult zwischen <b>„Einzelne Atome“</b> und <b>„Metallgitter“</b> um. Vergleiche dann Metall mit Kunststoff.</p>'+segQHTML(OBS2,s.obs,s.obsOk)+
     (s.obsOk?'':'<div class="row"><button class="btn pri" type="button" id="c2">Prüfen</button></div>')+'<p class="fb" id="fb2"></p></div>';
   var ru=s.obsOk?FACH2+mcHTML('rumpf',QRUMPF.q,QRUMPF.o,s.rumpf,QRUMPF.a):'';
-  $('task').innerHTML='<div><p class="eyebrow">Station 2 · Blick ins Metall</p><h2>Wie sind Metalle aufgebaut?</h2></div>'+obs+ru+
+  s.cmp=s.cmp||{};var cmp=s.rumpfOk?'<div class="stack"><p class="eyebrow">Teil B · Denke weiter</p>'+segQHTML(CMP2,s.cmp,s.cmpOk)+(s.cmpOk?'':'<div class="row"><button class="btn pri" type="button" id="c2b">Prüfen</button></div>')+'<p class="fb" id="fb2b"></p></div>':'';
+  var own=s.cmpOk?'<div class="q"><p><b>Beschreibe das Gittermodell in zwei Sätzen.</b> Benutze die Wörter <b>Atomrumpf</b> und <b>Elektronen</b>.</p><textarea class="free" id="own2" rows="3" placeholder="In einem Metall …">'+esc(s.own||'')+'</textarea>'+(s.ok?'':'<div class="row"><button class="btn pri" type="button" id="c2o">Fertig</button></div>')+'<p class="fb" id="fb2o"></p></div>':'';
+  $('task').innerHTML='<div><p class="eyebrow">Station 2 · Blick ins Metall</p><h2>Wie sind Metalle aufgebaut?</h2></div>'+obs+ru+cmp+own+
     (st.done[1]?'<p class="win"><b>Stark!</b> In Metallen gibt es freie Elektronen. Darum können Metalle Ladung leiten.</p>':'')+'<div class="row">'+nextBtn(1)+'</div>';
   bindSegQ(s.obs,function(){return s.obsOk;},OBS2);
   if(!s.obsOk)$('c2').addEventListener('click',function(){if(checkSegQ(OBS2,s.obs,'s2obs','fb2',r2)){s.obsOk=true;save();r2();}});
   else helpMsg('fb2','Gut beobachtet! Im Metall wandern die Elektronen frei, im Kunststoff nicht.');
-  if(s.obsOk){bindMC('rumpf',QRUMPF.a,'s2rumpf',QRUMPF.ok,QRUMPF.bad,function(){s.rumpfOk=true;finish(1);save();r2();showFb('rumpf',true,QRUMPF.ok);},function(j){s.rumpf=j;});if(s.rumpfOk)showFb('rumpf',true,QRUMPF.ok);}
+  if(s.obsOk){bindMC('rumpf',QRUMPF.a,'s2rumpf',QRUMPF.ok,QRUMPF.bad,function(){s.rumpfOk=true;save();r2();showFb('rumpf',true,QRUMPF.ok);},function(j){s.rumpf=j;});if(s.rumpfOk)showFb('rumpf',true,QRUMPF.ok);}
+  if(s.rumpfOk){bindSegQ(s.cmp,function(){return s.cmpOk;},CMP2);
+    if(!s.cmpOk)$('c2b').addEventListener('click',function(){if(checkSegQ(CMP2,s.cmp,'s2cmp','fb2b',r2)){s.cmpOk=true;save();r2();}});else helpMsg('fb2b','Stark gedacht!');}
+  if(s.cmpOk){$('own2').addEventListener('input',function(){s.own=this.value;save();});
+    if(!s.ok)$('c2o').addEventListener('click',function(){var fb=$('fb2o'),t=(s.own||'').trim();if(t.length<30){fb.className='fb bad';fb.textContent='Schreibe zwei ganze Sätze.';return;}if(!/atomr/i.test(t)||!/elektron/i.test(t)){fb.className='fb bad';fb.textContent='Benutze die Wörter „Atomrumpf“ und „Elektronen“.';return;}s.ok=true;finish(1);save();r2();});
+    else helpMsg('fb2o','Gespeichert.');}
   bindNext();
 }
 
@@ -544,14 +567,21 @@ var OBS3B=[
 ];
 var QHAND={q:'Warum kann man einen Metallstab, den man in der Hand hält, durch Reiben nicht aufladen?',o:['Die Elektronen können sich im Metall frei bewegen. Sie fließen über die Hand ab.','Metall hat keine Elektronen.','Beim Reiben von Metall wandern keine Elektronen.'],a:0,
   ok:'Genau! Metall und dein Körper leiten die Ladung weiter. Hat der Metallstab einen Griff aus Kunststoff, kann man ihn aufladen.',bad:['','Auch Metallatome haben Elektronen. Im Gittermodell sind sie sogar frei beweglich.','Probiere Versuch B: Was passiert mit den zusätzlichen Elektronen, wenn du das Metall anfasst?']};
+var MS3=[
+  {id:'m1',t:'Mission 1',q:'Versuch A: Mach das <b>linke Ende</b> so positiv wie möglich (<b>+7</b>).',check:function(){return M.bar.mode==='near'&&barCounts().L===7;},hint:function(){return M.bar.mode!=='near'?'Stelle zuerst Versuch A ein.':'Bringe den Stab noch näher heran.';}},
+  {id:'m2',t:'Mission 2',q:'Versuch B: Lade den Metallstab auf <b>–8</b> auf. Tipp: Die Kugel kannst du nachladen.',check:function(){var C=barCounts();return M.bar.mode==='touch'&&C.L+C.R===-8;},hint:function(){var C=barCounts();return M.bar.mode!=='touch'?'Stelle zuerst Versuch B ein.':(C.L+C.R>-8?'Berühre noch einmal mit der Kugel. Lade sie vorher nach.':'Das ist zu viel. Tippe auf „Alles zurücksetzen“.');}},
+  {id:'m3',t:'Mission 3',q:'Mach den Metallstab wieder <b>ungeladen</b>, ohne „Alles zurücksetzen“ zu benutzen.',check:function(){var C=barCounts();return M.bar.mode==='touch'&&C.L+C.R===0&&M.bar.hand;},hint:function(){return 'Wie wird man zusätzliche Elektronen los? Denk an deine Hand.';}}
+];
 function r3(){var s=st.s3;
   var a='<div class="stack"><p class="eyebrow">Teil A · Versuch A: Stab nähern</p><p>Ein Kunststoffstab ist negativ geladen. Bringe ihn mit dem Regler langsam näher an den Metallstab. Beobachte die freien Elektronen und das Ladungskonto.</p>'+segQHTML(OBS3A,s.obsA,s.aOk)+
     (s.aOk?'':'<div class="row"><button class="btn pri" type="button" id="c3a">Prüfen</button></div>')+'<p class="fb" id="fb3a"></p></div>';
   var b=s.aOk?'<div class="stack"><p class="eyebrow">Teil B · Versuch B: Berühren und ableiten</p><p>Stelle im Steuerpult <b>Versuch B</b> ein. Berühre das Metall mit der geladenen Kugel. Fasse es danach mit der Hand an.</p>'+segQHTML(OBS3B,s.obsB,s.bOk)+
     (s.bOk?'':'<div class="row"><button class="btn pri" type="button" id="c3b">Prüfen</button></div>')+'<p class="fb" id="fb3b"></p></div>':'';
-  var hd=s.bOk?mcHTML('hand',QHAND.q,QHAND.o,s.hand,QHAND.a):'';
+  var mis=s.bOk?'<div class="stack"><p class="eyebrow">Teil C · Missionen</p>'+MS3.map(function(m,i){var open=i===0||s[MS3[i-1].id];if(!open)return '';
+    return '<div class="q"><p class="eyebrow">'+m.t+(s[m.id]?' · geschafft ★':'')+'</p><p>'+m.q+'</p>'+(s[m.id]?'':'<div class="row"><button class="btn pri" type="button" data-m3="'+i+'">Prüfen</button></div>')+'<p class="fb'+(s[m.id]?' ok':'')+'" id="fbm3'+i+'">'+(s[m.id]?'Geschafft!':'')+'</p></div>';}).join('')+'</div>':'';
+  var hd=s.m3?mcHTML('hand',QHAND.q,QHAND.o,s.hand,QHAND.a):'';
   var own=s.handOk?'<div class="q"><p><b>Erkläre es einem Mitschüler:</b> Warum fließt über einen Kunststoffstab keine Ladung ab? Benutze das Wort <b>Elektronen</b>.</p><textarea class="free" id="own" rows="3" placeholder="Über Kunststoff fließt keine Ladung ab, weil …">'+esc(s.own)+'</textarea>'+(s.ok?'':'<div class="row"><button class="btn pri" type="button" id="c3o">Fertig</button></div>')+'<p class="fb" id="fb3o"></p></div>':'';
-  $('task').innerHTML='<div><p class="eyebrow">Station 3 · Ladung im Metall</p><h2>Was machen die freien Elektronen?</h2></div>'+a+b+hd+own+
+  $('task').innerHTML='<div><p class="eyebrow">Station 3 · Ladung im Metall</p><h2>Was machen die freien Elektronen?</h2></div>'+a+b+mis+hd+own+
     (st.done[2]?'<p class="win"><b>Super!</b> Mit dem Gittermodell kannst du erklären, wie sich Ladung in Metallen bewegt.</p>':'')+'<div class="row">'+nextBtn(2)+'</div>';
   bindSegQ(s.obsA,function(){return s.aOk;},OBS3A);
   if(!s.aOk)$('c3a').addEventListener('click',function(){if(checkSegQ(OBS3A,s.obsA,'s3a','fb3a',r3)){s.aOk=true;save();r3();}});
@@ -559,7 +589,10 @@ function r3(){var s=st.s3;
   if(s.aOk){bindSegQ(s.obsB,function(){return s.bOk;},OBS3B);
     if(!s.bOk)$('c3b').addEventListener('click',function(){if(checkSegQ(OBS3B,s.obsB,'s3b','fb3b',r3)){s.bOk=true;save();r3();}});
     else helpMsg('fb3b','Genau! Zusätzliche Elektronen verteilen sich im ganzen Metall und fließen über die Hand ab.');}
-  if(s.bOk){bindMC('hand',QHAND.a,'s3hand',QHAND.ok,QHAND.bad,function(){s.handOk=true;save();r3();showFb('hand',true,QHAND.ok);},function(j){s.hand=j;});if(s.handOk)showFb('hand',true,QHAND.ok);}
+  Array.prototype.forEach.call(document.querySelectorAll('[data-m3]'),function(bt){bt.addEventListener('click',function(){var i=+bt.dataset.m3,m=MS3[i],ok=m.check();tryInc('s3'+m.id,ok,'');
+    var fb=$('fbm3'+i);if(ok){s[m.id]=true;save();r3();}else{fb.className='fb bad';fb.textContent=m.hint();
+      showHelp(fb,'s3'+m.id,function(){s[m.id]=true;save();r3();});}});});
+  if(s.m3){bindMC('hand',QHAND.a,'s3hand',QHAND.ok,QHAND.bad,function(){s.handOk=true;save();r3();showFb('hand',true,QHAND.ok);},function(j){s.hand=j;});if(s.handOk)showFb('hand',true,QHAND.ok);}
   if(s.handOk){$('own').addEventListener('input',function(){s.own=this.value;save();});
     if(!s.ok)$('c3o').addEventListener('click',function(){var fb=$('fb3o');var t=(s.own||'').trim();if(t.length<15){fb.className='fb bad';fb.textContent='Schreibe einen ganzen Satz.';return;}if(!/elektron/i.test(t)){fb.className='fb bad';fb.textContent='Benutze das Wort „Elektronen“.';return;}s.ok=true;finish(2);save();r3();});
     else helpMsg('fb3o','Gespeichert.');}
@@ -577,17 +610,25 @@ var GAPS=[
 ];
 var WORTE='Leiter · Leiter · Isolatoren · Atomrümpfe · freie Elektronen · Atome';
 var MERK='<div class="merk"><h3>Merksatz: Das Gittermodell der Metalle</h3><ol style="margin:0;padding-left:1.2em">'+GAPS.map(function(g){return '<li>'+g.pre+'<span class="k">'+g.o[g.a]+'</span>'+g.post+'</li>';}).join('')+'</ol></div>';
+var FD=[
+  {id:'a',q:'„Metalle leiten, weil sie keine Elektronen haben.“',o:['richtig','falsch'],a:1,w:'Denk an das Gittermodell: Was bewegt sich zwischen den Atomrümpfen?'},
+  {id:'b',q:'„Gummi ist ein Isolator.“',o:['richtig','falsch'],a:0,w:'Denk an deinen Leiter-Test.'},
+  {id:'c',q:'„Die Atomrümpfe wandern durch das Metall.“',o:['richtig','falsch'],a:1,w:'Schau in Station 2 auf die roten Kreise.'},
+  {id:'d',q:'„Ein Stück Metall, das niemand aufgeladen hat, ist ungeladen.“',o:['richtig','falsch'],a:0,w:'Denk an das Ladungskonto: gleich viele + und –.'},
+  {id:'e',q:'„Fasst man einen geladenen Metallstab an, fließt die Ladung über die Hand ab.“',o:['richtig','falsch'],a:0,w:'Denk an Versuch B in Station 3.'}
+];
 var KABEL={q:'Ein Stromkabel hat innen Drähte aus Kupfer und außen eine Hülle aus Kunststoff. Warum?',o:['Durch das Kupfer fließt die Ladung. Der Kunststoff ist ein Isolator und schützt uns.','Der Kunststoff leitet die Ladung, das Kupfer macht das Kabel stabil.','Kupfer und Kunststoff leiten beide gleich gut.'],a:0,
   ok:'Richtig! Kupfer ist ein guter Leiter. Die Hülle aus Kunststoff sorgt dafür, dass die Ladung nicht in deinen Körper fließt.',bad:['','Welcher der beiden Stoffe hat freie Elektronen?','Denk an deinen Leiter-Test in Station 1.']};
 function r4(){var s=st.s4;
   var refl=s.ok?'<div class="guess stack"><p class="eyebrow pro">Zurück zu deiner Vermutung</p>'+
     (st.guess?'<p>Du hast vermutet: <b>'+guessName(st.guess)+'</b></p>'+(st.guess==='A'?'<p class="fb ok">Deine Vermutung stimmt!</p>':'<p class="fb bad">Deine Vermutung stimmt nicht. Richtig ist A: Nur über den Metallstab fließt die Ladung ab.</p>'):'<p>Du hast keine Vermutung gewählt. Richtig ist <b>A</b>.</p>')+
     '<p>Beantworte jetzt die Leitfrage in einem Satz: <b>Warum leiten Metalle elektrische Ladung?</b></p><textarea class="free" id="refl" rows="2" placeholder="Metalle leiten Ladung, weil …">'+esc(s.refl)+'</textarea></div>':'';
-  var kab=s.ok?mcHTML('kabel',KABEL.q,KABEL.o,s.kabel,KABEL.a):'';
+  s.fd=s.fd||{};var fd=s.ok?'<div class="stack"><p class="eyebrow">Fehler-Detektiv</p><p>Richtig oder falsch? Prüfe die Aussagen.</p>'+segQHTML(FD,s.fd,s.fdOk)+(s.fdOk?'':'<div class="row"><button class="btn pri" type="button" id="c4f">Prüfen</button></div>')+'<p class="fb" id="fb4f"></p></div>':'';
+  var kab=s.fdOk?mcHTML('kabel',KABEL.q,KABEL.o,s.kabel,KABEL.a):'';
   $('task').innerHTML='<div><p class="eyebrow">Station 4 · Merksatz</p><h2>Unser Merksatz</h2></div><p>Wähle die passenden Wörter. Im Modell kannst du alles nachprüfen.</p><p class="hint"><b>Wortspeicher:</b> '+WORTE+'</p>'+
    '<div class="gap"><ol>'+GAPS.map(function(g,i){return '<li>'+g.pre+'<select class="sel" id="g'+i+'" aria-label="Lücke '+(i+1)+'"><option value="">…</option>'+g.o.map(function(o,j){return '<option value="'+j+'">'+o+'</option>';}).join('')+'</select>'+g.post+'</li>';}).join('')+'</ol></div>'+
    '<div class="row"><button class="btn pri" type="button" id="c4">Prüfen</button><span class="fb" id="fb4"></span></div>'+
-   (s.ok?MERK+'<p class="muted">Schreibe den Merksatz gleich in dein Heft. Wir besprechen ihn gemeinsam.</p>':'')+refl+kab+(s.kabelOk?'<p class="win"><b>Geschafft!</b> Speichere jetzt deine Ergebnisse. Wenn du noch Zeit hast: Profi-Zusatz ★</p>'+resultsHTML():'')+'<div class="row">'+nextBtn(3)+'</div>';
+   (s.ok?MERK+'<p class="muted">Schreibe den Merksatz gleich in dein Heft. Wir besprechen ihn gemeinsam.</p>':'')+refl+fd+kab+(s.kabelOk?'<p class="win"><b>Geschafft!</b> Speichere jetzt deine Ergebnisse. Wenn du noch Zeit hast: Profi-Zusatz ★</p>'+resultsHTML():'')+'<div class="row">'+nextBtn(3)+'</div>';
   GAPS.forEach(function(g,i){var el=$('g'+i),v=s.gaps[i];if(s.ok){el.value=String(g.a);el.className='sel ok';}else if(v!=null&&v!=='')el.value=v;
     el.addEventListener('change',function(){s.gaps[i]=this.value;this.className='sel';save();});});
   $('c4').addEventListener('click',function(){if(s.ok)return;var wrong=0,empty=0;GAPS.forEach(function(g,i){var e=$('g'+i);if(e.value===''){empty++;return;}var ok=+e.value===g.a;e.className='sel '+(ok?'ok':'bad');if(!ok)wrong++;});
@@ -597,6 +638,9 @@ function r4(){var s=st.s4;
       showHelp(fb,'s4gaps',function(){GAPS.forEach(function(g,i){s.gaps[i]=String(g.a);});save();r4();helpMsg('fb4','Die Lösung ist eingetragen. Lies sie dir durch und tippe auf „Prüfen“.');});return;}
     s.ok=true;save();r4();});
   if(s.ok){$('refl').addEventListener('input',function(){s.refl=this.value;save();});
+    bindSegQ(s.fd,function(){return s.fdOk;},FD);
+    if(!s.fdOk)$('c4f').addEventListener('click',function(){if(checkSegQ(FD,s.fd,'s4fd','fb4f',r4)){s.fdOk=true;save();r4();}});else helpMsg('fb4f','Alle Fehler gefunden!');}
+  if(s.fdOk){
     bindMC('kabel',KABEL.a,'s4kabel',KABEL.ok,KABEL.bad,function(){s.kabelOk=true;finish(3);save();r4();showFb('kabel',true,KABEL.ok);},function(j){s.kabel=j;});if(s.kabelOk)showFb('kabel',true,KABEL.ok);}
   bindResults();bindNext();
 }
@@ -610,19 +654,29 @@ var P5=[
   {id:'c',title:'Der Tanklaster',task:'Beim Befüllen und Entleeren kann sich ein Tanklaster durch Reibung elektrisch aufladen. Darum wird er vorher mit einem Kabel aus Metall mit der Erde verbunden.',q:'Wozu dient das Kabel?',
    o:['Die Ladung fließt über das Metall zur Erde ab. So entstehen keine gefährlichen Funken.','Das Kabel lädt den Laster noch stärker auf.','Das Kabel ist ein Isolator und hält die Ladung im Laster fest.'],a:0,ok:'Genau! Über den Leiter fließt die Ladung ab, bevor ein Funke den Kraftstoff entzünden kann.',bad:'Ist ein Metallkabel ein Leiter oder ein Isolator? Was passiert dann mit der Ladung?'}
 ];
+P5.push(
+  {id:'d',title:'Das Werkzeug',task:'Schraubendreher und Zangen für Elektriker haben Griffe aus Kunststoff.',q:'Warum?',
+   o:['Kunststoff ist ein Isolator. Die Ladung kann nicht in die Hand fließen.','Kunststoff ist ein guter Leiter.','Kunststoff macht das Werkzeug schwerer.'],a:0,ok:'Richtig! Der Griff aus Kunststoff schützt den Elektriker.',bad:'Leitet Kunststoff oder isoliert er?'},
+  {id:'e',title:'Die Bleistiftmine',task:'Eine Bleistiftmine besteht aus Graphit. Graphit ist kein Metall, leitet aber Ladung.',q:'Was folgt daraus?',
+   o:['Nicht nur Metalle leiten. Auch in Graphit gibt es bewegliche Elektronen.','Graphit ist doch ein Metall.','Graphit kann keine Elektronen haben.'],a:0,ok:'Genau! Metalle sind gute Leiter, aber es gibt auch andere Leiter, zum Beispiel Graphit.',bad:'Graphit ist kein Metall. Trotzdem leitet es. Was haben alle Leiter gemeinsam?'});
+var P5TXT='Erkläre mit dem Gittermodell, warum man einen Metallstab mit einem Griff aus Kunststoff durch Reiben aufladen kann.';
+function p5done(){return P5.every(function(x){return st.s5[x.id]===x.a;})&&st.s5.txtOk;}
 function r5(){
   $('task').innerHTML='<div><p class="eyebrow pro">Profi-Zusatz ★</p><h2>Profi-Fälle zum Gittermodell</h2></div>'+
     P5.map(function(p){var v=st.s5[p.id];return '<div class="q"><h3>'+p.title+'</h3><p>'+p.task+'</p><p><b>'+p.q+'</b></p><div class="choice" data-p="'+p.id+'">'+p.o.map(function(o,j){return '<button type="button" class="opt'+(v===j?(j===p.a?' ok':' bad'):'')+'" data-j="'+j+'">'+o+'</button>';}).join('')+'</div><p class="fb'+(v===p.a?' ok':(v!=null?' bad':''))+'">'+(v==null?'':(v===p.a?p.ok:p.bad))+'</p></div>';}).join('')+
+    '<div class="q"><h3>Erkläre es</h3><p><b>'+P5TXT+'</b></p><textarea class="free" id="p5t" rows="3" placeholder="Die Elektronen im Metall …">'+esc(st.s5.txt||'')+'</textarea>'+(st.s5.txtOk?'':'<div class="row"><button class="btn pri" type="button" id="c5t">Fertig</button></div>')+'<p class="fb'+(st.s5.txtOk?' ok':'')+'" id="fb5t">'+(st.s5.txtOk?'Gespeichert.':'')+'</p></div>'+
     (st.done[4]?'<p class="win"><b>Profi-Level geschafft!</b> Erkläre einem Mitschüler eine der Aufgaben.</p>':'')+resultsHTML();
   Array.prototype.forEach.call(document.querySelectorAll('.choice[data-p]'),function(box){var p=P5.filter(function(x){return x.id===box.dataset.p;})[0];
-    Array.prototype.forEach.call(box.children,function(b){b.addEventListener('click',function(){var j=+b.dataset.j;tryInc('s5'+p.id,j===p.a,j);st.s5[p.id]=j;save();if(P5.every(function(x){return st.s5[x.id]===x.a;}))finish(4);r5();});});});
+    Array.prototype.forEach.call(box.children,function(b){b.addEventListener('click',function(){var j=+b.dataset.j;tryInc('s5'+p.id,j===p.a,j);st.s5[p.id]=j;save();if(p5done())finish(4);r5();});});});
+  $('p5t').addEventListener('input',function(){st.s5.txt=this.value;save();});
+  var c5=$('c5t');if(c5)c5.addEventListener('click',function(){var t=(st.s5.txt||'').trim(),fb=$('fb5t');if(t.length<30){fb.className='fb bad';fb.textContent='Schreibe mindestens zwei ganze Sätze.';return;}st.s5.txtOk=true;save();if(p5done())finish(4);r5();});
   bindResults();
 }
 
 /* ---------- Ergebnisse ---------- */
-var TL=[['s1obs','Station 1 · Leiter-Test (6 Stoffe)'],['s1gem','Station 1 · Was haben die Leiter gemeinsam?'],['s2obs','Station 2 · Beobachtungen im Metallgitter'],['s2rumpf','Station 2 · Warum ist ein Atomrumpf positiv?'],
-  ['s3a','Station 3 · Geladenen Stab nähern'],['s3b','Station 3 · Berühren und ableiten'],['s3hand','Station 3 · Metallstab in der Hand'],
-  ['s4gaps','Station 4 · Merksatz-Lückentext'],['s4kabel','Station 4 · Stromkabel'],['s5a','Profi · Der warme Draht'],['s5b','Profi · Türklinke'],['s5c','Profi · Tanklaster']];
+var TL=[['s1obs','Station 1 · Leiter-Test (8 Stoffe)'],['s1gem','Station 1 · Was haben die Leiter gemeinsam?'],['s2obs','Station 2 · Beobachtungen im Metallgitter'],['s2rumpf','Station 2 · Warum ist ein Atomrumpf positiv?'],['s2cmp','Station 2 · Denke weiter'],
+  ['s3a','Station 3 · Geladenen Stab nähern'],['s3b','Station 3 · Berühren und ableiten'],['s3m1','Station 3 · Mission 1 (+7)'],['s3m2','Station 3 · Mission 2 (–8)'],['s3m3','Station 3 · Mission 3 (entladen)'],['s3hand','Station 3 · Metallstab in der Hand'],
+  ['s4gaps','Station 4 · Merksatz-Lückentext'],['s4fd','Station 4 · Fehler-Detektiv'],['s4kabel','Station 4 · Stromkabel'],['s5a','Profi · Der warme Draht'],['s5b','Profi · Türklinke'],['s5c','Profi · Tanklaster'],['s5d','Profi · Werkzeug'],['s5e','Profi · Bleistiftmine']];
 function who(){var r=st.res||{};return {name:r.name||'',klasse:r.klasse||''};}
 function resText(){
   var r=who(),d=new Date(),L=[];
@@ -636,14 +690,15 @@ function resText(){
   L.push('');
   L.push('MEINE VERMUTUNG: '+(st.guess?guessName(st.guess):'keine gewählt')+(st.guess==='A'?'  → stimmt':'  → richtig ist A'));
   L.push('');
-  L.push('STATION 1 · Leiter-Test');L.push('  Im Modell getestet: '+tested+' von 6 Stoffen');
+  L.push('STATION 1 · Leiter-Test');L.push('  Im Modell getestet: '+tested+' von 8 Stoffen');L.push('  Vorhersage richtig: '+predScore()+' von 8');
   OBS1.forEach(function(q){var v=st.s1.obs[q.id];L.push('  '+q.q.replace(/<[^>]+>/g,'')+': '+(v==null?'(keine Antwort)':q.o[v]+(v===q.a?'  ✓':'  ✗')));});
   L.push('  Gemeinsamkeit der Leiter: '+a(QGEM,st.s1.gem));L.push('');
-  L.push('STATION 2 · Blick ins Metall');segs(OBS2,st.s2.obs);L.push('  Atomrumpf positiv: '+a(QRUMPF,st.s2.rumpf));L.push('');
-  L.push('STATION 3 · Ladung im Metall');segs(OBS3A,st.s3.obsA);segs(OBS3B,st.s3.obsB);L.push('  Metallstab in der Hand: '+a(QHAND,st.s3.hand));L.push('  Meine Erklärung (Kunststoff): '+((st.s3.own||'').trim()||'(leer)'));L.push('');
+  L.push('STATION 2 · Blick ins Metall');segs(OBS2,st.s2.obs);L.push('  Atomrumpf positiv: '+a(QRUMPF,st.s2.rumpf));segs(CMP2,st.s2.cmp||{});L.push('  Mein Gittermodell in zwei Sätzen: '+((st.s2.own||'').trim()||'(leer)'));L.push('');
+  L.push('STATION 3 · Ladung im Metall');segs(OBS3A,st.s3.obsA);segs(OBS3B,st.s3.obsB);L.push('  Missionen geschafft: '+['m1','m2','m3'].filter(function(k){return st.s3[k];}).length+' von 3');L.push('  Metallstab in der Hand: '+a(QHAND,st.s3.hand));L.push('  Meine Erklärung (Kunststoff): '+((st.s3.own||'').trim()||'(leer)'));L.push('');
   L.push('STATION 4 · Merksatz');
   if(st.s4.ok){GAPS.forEach(function(gp,i){L.push('  '+(i+1)+'. '+gp.pre+gp.o[gp.a]+gp.post);});}else L.push('  (Lückentext noch nicht gelöst)');
   L.push('  Antwort auf die Leitfrage: '+((st.s4.refl||'').trim()||'(leer)'));
+  L.push('  Fehler-Detektiv:');segs(FD,st.s4.fd||{});
   L.push('  Stromkabel: '+a(KABEL,st.s4.kabel));
   L.push('');
   L.push('VERSUCHE (wie oft geprüft bzw. eine Antwort gewählt wurde, bis es richtig war)');
@@ -656,8 +711,8 @@ function resText(){
   var hk=Object.keys(st.help||{});L.push('  Lösung anzeigen benutzt: '+(hk.length?hk.length+'-mal ('+hk.map(function(k){var x=TL.filter(function(t){return t[0]===k;})[0];return x?x[1]:k;}).join('; ')+')':'nein'));
   L.push('');
   L.push('PROFI-ZUSATZ ★');
-  P5.forEach(function(x){var v=st.s5[x.id];L.push('  '+x.title+': '+(v==null?'(nicht bearbeitet)':x.o[v]+(v===x.a?'  ✓':'  ✗')));});
-  var data={v:1,app:'LL4',name:r.name,klasse:r.klasse,ts:Date.now(),done:st.done,guess:st.guess,own:st.s3.own||'',refl:st.s4.refl||'',tested:tested,
+  P5.forEach(function(x){var v=st.s5[x.id];L.push('  '+x.title+': '+(v==null?'(nicht bearbeitet)':x.o[v]+(v===x.a?'  ✓':'  ✗')));});L.push('  Erklärung Kunststoffgriff: '+((st.s5.txt||'').trim()||'(leer)'));
+  var data={v:1,app:'LL4',name:r.name,klasse:r.klasse,ts:Date.now(),done:st.done,guess:st.guess,own:st.s3.own||'',own2:st.s2.own||'',refl:st.s4.refl||'',tested:tested,pred:predScore(),p5txt:st.s5.txt||'',
     tries:st.tries,s5:st.s5,help:hk,mins:mins0,resets:resets()};
   var json=JSON.stringify(data);
   L.push('');L.push('Die beiden folgenden Zeilen sind für die Auswertung. Bitte nicht verändern.');
