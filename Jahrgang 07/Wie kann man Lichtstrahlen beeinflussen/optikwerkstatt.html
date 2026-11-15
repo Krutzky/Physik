@@ -171,6 +171,14 @@ table.mt td.v b{font-size:16px}
 .pic svg{width:100%;max-width:84px;height:auto}
 .choice.grid4{display:grid;grid-template-columns:repeat(4,1fr)}
 @media (max-width:440px){.choice.grid4{grid-template-columns:1fr 1fr}}
+.abg-ov{position:fixed;inset:0;background:rgba(2,8,40,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto;z-index:60}
+.abg-box{background:var(--surface);color:var(--ink);border-radius:16px;max-width:560px;width:100%;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.abg-box h2{margin:0}
+.abg-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.abg-in{border:2px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface);color:var(--ink);font:inherit}
+.abg-copy{background:var(--accent);color:var(--accent-ink);border:none;border-radius:999px;padding:12px 22px;font-weight:700;font-size:18px}
+.abg-fb{font-weight:700;min-height:1.4em}
+.abg-fb.ok{color:var(--ok)} .abg-fb.bad{color:var(--bad)}
 .savebtn{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700;padding:6px 14px;font-size:14px}
 .savebtn.pulse{animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,137,43,.7)}50%{box-shadow:0 0 0 8px rgba(232,137,43,0)}}
@@ -734,6 +742,19 @@ function resultsHTML(){var r=st.res||{};
    '<div class="row"><button class="btn sec" type="button" id="saveBack">Zurück zur Aufgabe</button></div>';}
 function saveCTA(end){return '<div class="merk stack" style="border-color:var(--accent)"><h3 style="color:var(--ink)">Ergebnisse speichern</h3><p class="muted">'+(end?'Geschafft! Speichert jetzt eure Ergebnisse und ladet sie bei IServ hoch.':'Speichert eure Ergebnisse und ladet sie bei IServ hoch.')+'</p><div class="row"><button class="btn pri" type="button" id="ctaSave">Ergebnisse speichern</button></div></div>';}
 function bindCTA(){var b=$('ctaSave');if(b)b.addEventListener('click',openSave);}
+/* ---------- Start: Name und Klasse ---------- */
+function startDialog(){var r=st.res||{};if(r.name&&r.klasse)return;
+  var ov=document.createElement('div');ov.className='abg-ov';
+  ov.innerHTML='<div class="abg-box" role="dialog" aria-modal="true" aria-labelledby="stH"><p class="eyebrow">Wie helfen uns Linsen beim Sehen?</p><h2 id="stH">Willkommen in der Optik-Werkstatt!</h2>'+
+    '<p>Heute findest du heraus, wie Lupe, Auge und Brille funktionieren.</p>'+
+    '<p class="muted">Arbeitet ihr zu zweit? Dann tragt beide Namen ein.</p>'+
+    '<div class="abg-row"><label for="stName">Name(n)</label><input class="abg-in" id="stName" autocomplete="off" style="width:14em" value="'+esc(r.name)+'" placeholder="Vorname N."></div>'+
+    '<div class="abg-row"><label for="stKl">Klasse</label><input class="abg-in" id="stKl" autocomplete="off" style="width:6em" value="'+esc(r.klasse)+'" placeholder="7a"></div>'+
+    '<div class="abg-row"><button class="abg-copy" type="button" id="stGo">Los geht’s</button></div><p class="abg-fb bad" id="stFb"></p></div>';
+  document.body.appendChild(ov);var n=ov.querySelector('#stName'),k=ov.querySelector('#stKl');setTimeout(function(){n.focus();},30);
+  function go(){var nm=n.value.trim(),kl=k.value.trim();if(!nm){ov.querySelector('#stFb').textContent='Bitte trage deinen Namen ein.';n.focus();return;}if(!kl){ov.querySelector('#stFb').textContent='Bitte trage deine Klasse ein.';k.focus();return;}
+    st.res=st.res||{};st.res.name=nm;st.res.klasse=kl;save();ov.remove();}
+  ov.querySelector('#stGo').addEventListener('click',go);[n,k].forEach(function(el){el.addEventListener('keydown',function(e){if(e.key==='Enter')go();});});}
 var lastFocus=null;
 function openSave(){lastFocus=document.activeElement;$('saveBody').innerHTML=resultsHTML();$('saveDlg').hidden=false;document.body.style.overflow='hidden';
   bindResults();$('saveClose').addEventListener('click',closeSave);$('saveBack').addEventListener('click',closeSave);
@@ -778,7 +799,7 @@ if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)');i
 new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
 load();if(!st.t0){st.t0=Date.now();save();}if(!unlocked(st.station))st.station=0;
-render();remind();
+render();remind();startDialog();
 })();
 </script>
 </body>
