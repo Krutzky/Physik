@@ -227,7 +227,7 @@ table.mt tr{cursor:pointer}
 'use strict';
 var $=function(id){return document.getElementById(id);};
 var APP={title:'Sonne-Wind-Labor',file:'Sonne-Wind-Labor',klasse:'10',lesson:'Wie gewinnen wir Energie aus Sonne und Wind?',welcome:'Willkommen im Sonne-Wind-Labor!',intro:'Heute untersuchst du, wie viel Energie Solarmodul und Windrad liefern und wovon das abhängt.'};
-var KEY='sonne-wind-labor-v1',RKEY='sonne-wind-labor-resets';
+var KEY='sonne-wind-labor-v2',RKEY='sonne-wind-labor-resets';
 var STATIONS=[
   {key:'s1',name:'Solarmodul',scene:'solar'},
   {key:'s2',name:'Leistung messen',scene:'solar'},
@@ -471,7 +471,7 @@ function measGraph(id,rows,xlab,xfmt){var B=vctx(id),y=B.x,w=B.w;y.fillStyle='#F
   y.fillText(xlab,(L+R)/2,Bt+w*0.11);if(!pts.length){y.textBaseline='middle';y.fillText('Noch keine Messwerte',(L+R)/2,T+(Bt-T)*0.3);}}
 function renderSolarViews(){$('capA').innerHTML='<b>Energieflussdiagramm</b> Solarmodul';$('capB').innerHTML='<b>Eure Messung</b> (Station 2)';
   flowView('cvA','Solarmodul','Licht','elektrisch',20,'Wärme');
-  measGraph('cvB',MROWS.map(function(r){var m=st.meas[r.id]||{},P=num(m.P);return {x:r.light,P:m.ok?P:null};}),'Licht in %',function(v){return v+' %';});}
+  measGraph('cvB',MROWS.map(function(r){var m=st.meas[r.id]||{},P=num(m.P);return {x:r.lab,P:m.ok?P:null};}),'Messung bei 100 % Licht',function(v){return v;});}
 function renderWindViews(){$('capA').innerHTML='<b>Energieflussdiagramm</b> Windkraftanlage';$('capB').innerHTML='<b>Leistung und Windgeschwindigkeit</b> (Modell)';
   flowView('cvA','Wind','Wind','elektrisch',45,'Wärme / Verwirbelung');
   measGraph('cvB',[3,6,9].map(function(v){return {x:v,P:windP(v)*1000};}),'Wind in m/s',function(v){return v+' m/s';});}
@@ -480,8 +480,8 @@ function loop(t){var sc=STATIONS[st.station].scene;if(sc==='wind'){var dt=lastT?
 
 /* ---------- Steuerpult ---------- */
 function renderCtl(){var sc=STATIONS[st.station].scene,h='';
-  if(sc==='solar'){var forced=STATIONS[st.station].key==='s2';h=slider('Li','LICHT',st.light+' %',0,100,5,st.light,'0 %','100 %','g')+
-      '<div class="ctlrow"><span>LAST (WIDERSTAND)</span>'+segHTML('sL',[['1','angeschlossen'],['0','getrennt']],st.load?'1':'0')+'</div>'+(forced?'<p class="muted">Für die Leistungsmessung muss die Last angeschlossen sein.</p>':'');}
+  if(sc==='solar'){var forced=STATIONS[st.station].key==='s2';h=(forced?'<div class="ctlrow"><span>LICHT</span><b>100 %</b></div>':slider('Li','LICHT',st.light+' %',0,100,5,st.light,'0 %','100 %','g'))+
+      '<div class="ctlrow"><span>LAST (WIDERSTAND)</span>'+segHTML('sL',[['1','angeschlossen'],['0','getrennt']],st.load?'1':'0')+'</div>'+(forced?'<p class="muted">In Station 2 bleibt das Licht bei 100 %. Für die Leistung zählt die Messung mit Last.</p>':'');}
   else if(sc==='wind')h=slider('Wi','WINDGESCHWINDIGKEIT',st.wind+' m/s',0,12,1,st.wind,'0 m/s','12 m/s','g')+'<p class="muted">Ab 10 m/s regelt die Anlage ab: mehr Leistung gibt es nicht.</p>';
   else h='<div class="ctlrow"><span>HERVORHEBEN</span>'+segHTML('sP',[['solar','Solarmodul'],['wind','Windkraft'],['kohle','Kohle']],st.plant)+'</div>';
   $('ctl').innerHTML=h;
@@ -523,26 +523,26 @@ var Q1c={q:'Wie groß ist die Stromstärke, wenn die Last getrennt ist?',o:['0 m
 function r1(){stationRender(0,'Wie arbeitet ein Solarmodul?','Verändere im Steuerpult das Licht und die Last. Beobachte die beiden Messgeräte.',[Mq('m1a',Q1a,r1),Mq('m1b',Q1b,r1),Mq('m1c',Q1c,r1)],'<b>Stark!</b> Merke: Die Leistung eines Solarmoduls misst man nur mit angeschlossener Last.',guessBox(),function(){return '<div class="merk"><h3>Eure Vermutung</h3><p>Ihr habt vermutet: <span class="k">'+(st.guess||'–')+'</span>. Richtig ist <span class="k">B</span>: Die Spannung sinkt kaum.</p></div>';});}
 
 /* Station 2: Messtabelle */
-var MROWS=[{id:'l100',light:100},{id:'l60',light:60},{id:'l30',light:30}];
-var Q2={q:'Bei 30 % Licht beträgt die Leistung im Vergleich zu 100 % Licht …',o:['deutlich weniger als 30 %, nur etwa ein Zehntel.','genau 30 %.','genauso viel.'],a:0,ok:'Genau! Mit weniger Licht sinken Spannung <b>und</b> Stromstärke. Die Leistung bricht deshalb stark ein. Das ist wichtig für die nächste Stunde.',bad:['','Rechne nach: P bei 30 % geteilt durch P bei 100 %.','Schau auf euren Graphen rechts unten.']};
-function r2(){var html=head(1,'Die Leistung des Solarmoduls messen')+'<p>Stelle das Licht auf den Wert der Zeile ein. Lies U und I ab und berechne <b>P = U · I</b>. Mit I in mA kommt P in mW heraus.</p>'+
-  '<div class="tw"><table class="mt"><thead><tr><th>Licht</th><th>U<small>in V</small></th><th>I<small>in mA</small></th><th>P = U · I<small>in mW</small></th><th></th></tr></thead><tbody>'+
-  MROWS.map(function(r){var m=st.meas[r.id]||{};return '<tr><td>'+r.light+' %</td><td><input class="num'+(m.ok?' ok':'')+'" data-mu="'+r.id+'" inputmode="decimal" value="'+esc(m.U||'')+'"'+(m.ok?' disabled':'')+'></td><td><input class="num'+(m.ok?' ok':'')+'" data-mi="'+r.id+'" inputmode="decimal" value="'+esc(m.I||'')+'"'+(m.ok?' disabled':'')+'></td><td><input class="num'+(m.ok?' ok':'')+'" data-mp="'+r.id+'" inputmode="decimal" value="'+esc(m.P||'')+'"'+(m.ok?' disabled':'')+'></td><td>'+(m.ok?'✓':'<button class="btn pri sm" type="button" data-rc="'+r.id+'">Prüfen</button>')+'</td></tr>';}).join('')+
+var MROWS=[{id:'l100',light:100,load:true,lab:'mit Last'},{id:'open',light:100,load:false,lab:'ohne Last'}];
+var C2={id:'c2',q:'Ein kleineres Modul liefert bei vollem Licht nur <b>95 mW</b>. Wie viel Prozent der Leistung eures Moduls (<b>475 mW</b>) sind das?',unit:'%',ans:20,tol:0.6,errs:[[0.2,0.01,'Fast! Gib das Ergebnis in Prozent an: mal 100 %.'],[500,10,'Du hast falsch herum geteilt. Teil : Ganzes, also 95 mW : 475 mW.'],[380,1,'Das ist die Differenz in mW. Gefragt ist der Anteil in Prozent.']],tips:['Anteil in % = Teil : Ganzes · 100 %.','95 mW : 475 mW = 0,2'],sol:'Richtig! 95 mW : 475 mW = 0,2 = 20 %. So vergleicht man Leistungen in Prozent.'};
+function r2(){var html=head(1,'Die Leistung des Solarmoduls messen')+'<p>Das Licht steht auf <b>100 %</b>. Miss einmal <b>mit</b> und einmal <b>ohne Last</b> (Steuerpult). Lies U und I ab und berechne <b>P = U · I</b>. Mit I in mA kommt P in mW heraus.</p>'+
+  '<div class="tw"><table class="mt"><thead><tr><th>Messung</th><th>U<small>in V</small></th><th>I<small>in mA</small></th><th>P = U · I<small>in mW</small></th><th></th></tr></thead><tbody>'+
+  MROWS.map(function(r){var m=st.meas[r.id]||{};return '<tr><td>'+r.lab+'</td><td><input class="num'+(m.ok?' ok':'')+'" data-mu="'+r.id+'" inputmode="decimal" value="'+esc(m.U||'')+'"'+(m.ok?' disabled':'')+'></td><td><input class="num'+(m.ok?' ok':'')+'" data-mi="'+r.id+'" inputmode="decimal" value="'+esc(m.I||'')+'"'+(m.ok?' disabled':'')+'></td><td><input class="num'+(m.ok?' ok':'')+'" data-mp="'+r.id+'" inputmode="decimal" value="'+esc(m.P||'')+'"'+(m.ok?' disabled':'')+'></td><td>'+(m.ok?'✓':'<button class="btn pri sm" type="button" data-rc="'+r.id+'">Prüfen</button>')+'</td></tr>';}).join('')+
   '</tbody></table></div><p class="fb" id="fb2"></p>';
   var allM=MROWS.every(function(r){return st.meas[r.id]&&st.meas[r.id].ok;});
-  if(allM){html+=mcHTML('m2',Q2.q,Q2.o,st.m.m2,Q2.a);if(st.m.m2Ok){finish(1);html+='<p class="win"><b>Gemessen!</b> Ihr könnt die Leistung eines Solarmoduls bestimmen.</p>';}}
+  var c2ok=!!(st.c.c2&&st.c.c2.ok);if(allM){html+=calcHTML(C2);if(c2ok){finish(1);html+='<p class="win"><b>Gemessen!</b> Ihr könnt die Leistung eines Solarmoduls bestimmen und vergleichen.</p>';}}
   html+='<p class="hint"><b>Messen wie ein Profi:</b> Das Amperemeter ist in Reihe geschaltet, das Voltmeter parallel. Die Last bleibt angeschlossen.</p><div class="row">'+nextBtn(1)+'</div>';
   $('task').innerHTML=html;
   Array.prototype.forEach.call(document.querySelectorAll('[data-mu],[data-mi],[data-mp]'),function(inp){inp.addEventListener('input',function(){var id=inp.dataset.mu||inp.dataset.mi||inp.dataset.mp,m=st.meas[id]||(st.meas[id]={});if(inp.dataset.mu)m.U=inp.value;else if(inp.dataset.mi)m.I=inp.value;else m.P=inp.value;save();});});
   Array.prototype.forEach.call(document.querySelectorAll('button[data-rc]'),function(b){b.addEventListener('click',function(){var r=MROWS.filter(function(x){return x.id===b.dataset.rc;})[0],m=st.meas[r.id]||(st.meas[r.id]={}),fb=$('fb2');
-    var mod=solar(r.light,true),U=num(m.U),I=num(m.I),P=num(m.P),key='s2'+r.id;
-    if(isNaN(U)||isNaN(I)||isNaN(P)){fb.className='fb bad';fb.textContent='Zeile '+r.light+' %: Trage U, I und P ein.';return;}
+    var mod=solar(r.light,r.load),U=num(m.U),I=num(m.I),P=num(m.P),key='s2'+r.id;
+    if(isNaN(U)||isNaN(I)||isNaN(P)){fb.className='fb bad';fb.textContent='Zeile „'+r.lab+'“: Trage U, I und P ein.';return;}
     var okU=Math.abs(U-mod.U)<=0.04*mod.U+0.02,okI=Math.abs(I-mod.I*1000)<=0.04*mod.I*1000+2,okP=Math.abs(P-U*I)<=0.03*U*I+1;
     tryInc(key,okU&&okI&&okP,[m.U,m.I,m.P].join('/'));
     if(okU&&okI&&okP){m.ok=true;save();r2();draw();return;}
-    fb.className='fb bad';fb.textContent=!okU||!okI?('Zeile '+r.light+' %: Die Messwerte passen nicht. Steht das Licht im Steuerpult auf '+r.light+' % und ist die Last angeschlossen?'):(Math.abs(P-U*I/1000)<0.05*U*I/1000+0.01?'Fast! Du hast in W gerechnet. Gib P in mW an.':'Prüfe die Rechnung: P = '+fmt(U,2)+' V · '+fmt(I,0)+' mA.');
+    fb.className='fb bad';fb.textContent=!okU||!okI?('Zeile „'+r.lab+'“: Die Messwerte passen nicht. Ist die Last im Steuerpult '+(r.load?'angeschlossen':'getrennt')+'?'):(U*I>0&&Math.abs(P-U*I/1000)<0.05*U*I/1000+0.01?'Fast! Du hast in W gerechnet. Gib P in mW an.':'Prüfe die Rechnung: P = '+fmt(U,2)+' V · '+fmt(I,0)+' mA.');
     showHelp(fb,key,function(){m.U=fmt(mod.U,2);m.I=fmt(mod.I*1000,0);m.P=fmt(num(m.U)*num(m.I),0);m.ok=true;save();r2();draw();});});});
-  if(allM)mcBind('m2',Q2,st.m,'m2','m2',r2);bindNext();}
+  if(allM)calcBind(C2,r2);bindNext();}
 
 /* Station 3: Wind */
 var Q3a={q:'Welche Energieumwandlung findet in der Windkraftanlage statt?',o:['Bewegungsenergie des Windes → Bewegungsenergie des Rotors → Generator → elektrische Energie','Wind → Wärme → Dampf → elektrische Energie','Strahlungsenergie → elektrische Energie'],a:0,ok:'Richtig! Wie im Kohlekraftwerk macht ein Generator den Strom, aber ohne Brennstoff.',bad:['','Dampf gibt es im Kohlekraftwerk, nicht im Windrad.','Das ist das Solarmodul.']};
@@ -563,7 +563,7 @@ function r4(){var s=st;var srt={html:function(){return '<div class="stack"><p>Or
 
 /* Station 5: Merksatz */
 var WORDS=['elektrische','Generator','P = U · I','Last','Leistung','regenerativ'];
-var GAPS=[{id:'g1',pre:'Ein Solarmodul wandelt Strahlungsenergie (Licht) direkt in',post:'Energie um.',a:0},{id:'g2',pre:'In einer Windkraftanlage treibt der Rotor einen',post:'an.',a:1},{id:'g3',pre:'Die Leistung bestimmt man aus Spannung und Stromstärke:',post:'.',a:2},{id:'g4',pre:'Man misst immer mit angeschlossener',post:', sonst fließt kein Strom.',a:3},{id:'g5',pre:'Bei weniger Licht oder Wind sinkt die',post:'stark.',a:4},{id:'g6',pre:'Sonne und Wind sind',post:', liefern aber nicht immer gleich viel Strom.',a:5}];
+var GAPS=[{id:'g1',pre:'Ein Solarmodul wandelt Strahlungsenergie (Licht) direkt in',post:'Energie um.',a:0},{id:'g2',pre:'In einer Windkraftanlage treibt der Rotor einen',post:'an.',a:1},{id:'g3',pre:'Die Leistung bestimmt man aus Spannung und Stromstärke:',post:'.',a:2},{id:'g4',pre:'Man misst immer mit angeschlossener',post:', sonst fließt kein Strom.',a:3},{id:'g5',pre:'Bei schwächerem Wind sinkt die',post:'stark.',a:4},{id:'g6',pre:'Sonne und Wind sind',post:', liefern aber nicht immer gleich viel Strom.',a:5}];
 function r5(){var s=st,html=head(4,'Das nehmen wir mit');
   if(!s.gapsOk)html+='<div class="q gap"><p><b>Lückentext:</b> Wähle das passende Wort.</p><ol>'+GAPS.map(function(g){var v=s.gaps[g.id];return '<li>'+g.pre+' <select class="sel" data-g="'+g.id+'"><option value="">…</option>'+WORDS.map(function(w,j){return '<option value="'+j+'"'+(v===j?' selected':'')+'>'+w+'</option>';}).join('')+'</select> '+g.post+'</li>';}).join('')+'</ol><div class="row"><button class="btn pri" type="button" id="c5">Prüfen</button></div><p class="fb" id="fb5"></p></div>';
   else{html+='<div class="merk"><h3>Merksatz: Energie aus Sonne und Wind</h3><ol style="margin:0;padding-left:1.2em">'+GAPS.map(function(g){return '<li>'+g.pre+' <span class="k">'+WORDS[g.a]+'</span>'+(g.post.charAt(0)===','||g.post==='.'?'':' ')+g.post+'</li>';}).join('')+'</ol></div>'+saveCTA(true);finish(4);}
@@ -582,14 +582,14 @@ var Q6b={q:'Wo bleiben die übrigen 80 % der Lichtenergie?',o:['Sie erwärmen da
 function r6(){stationRender(5,'Wirkungsgrad eines Solarmoduls',null,[Cq(C6a,r6),Mq('m6b',Q6b,r6)],'<b>Profi!</b> Gute Solarmodule erreichen heute etwa 20 bis 23 %.',null,function(){return saveCTA(true);});}
 
 /* ---------- Ergebnisse ---------- */
-var TL=[['m1a','Solarmodul · Energieumwandlung'],['m1b','Solarmodul · Spannung ohne Last'],['m1c','Solarmodul · Stromstärke ohne Last'],['s2l100','Messen · 100 % Licht'],['s2l60','Messen · 60 % Licht'],['s2l30','Messen · 30 % Licht'],['m2','Messen · Leistung bei 30 %'],['m3a','Windkraft · Energieumwandlung'],['c3b','Windkraft · P bei 3 m/s'],['c3c','Windkraft · P bei 6 m/s'],['m3d','Windkraft · doppelte Windgeschwindigkeit'],['s4sort','Vergleich · Zuordnen'],['m4b','Vergleich · Gemeinsamkeit'],['m4c','Vergleich · regenerativ'],['s5gaps','Merksatz · Lückentext'],['c6a','Profi · Wirkungsgrad'],['m6b','Profi · Energieentwertung']];
+var TL=[['m1a','Solarmodul · Energieumwandlung'],['m1b','Solarmodul · Spannung ohne Last'],['m1c','Solarmodul · Stromstärke ohne Last'],['s2l100','Messen · mit Last'],['s2open','Messen · ohne Last'],['c2','Messen · Anteil in Prozent'],['m3a','Windkraft · Energieumwandlung'],['c3b','Windkraft · P bei 3 m/s'],['c3c','Windkraft · P bei 6 m/s'],['m3d','Windkraft · doppelte Windgeschwindigkeit'],['s4sort','Vergleich · Zuordnen'],['m4b','Vergleich · Gemeinsamkeit'],['m4c','Vergleich · regenerativ'],['s5gaps','Merksatz · Lückentext'],['c6a','Profi · Wirkungsgrad'],['m6b','Profi · Energieentwertung']];
 function resText(){var r=st.res||{},d=new Date(),L=[];
   L.push('SONNE-WIND-LABOR · Wie gewinnen wir Energie aus Sonne und Wind?');
   L.push('Name: '+(r.name||'')+'    Klasse: '+(r.klasse||'')+'    Datum: '+d.toLocaleDateString('de-DE')+', '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
   L.push(standLine());
   L.push('Geschafft: '+STATIONS.map(function(x,i){return x.name+(st.done[i]?' ✓':' –');}).join(' | '));L.push('');
   L.push('MEINE VERMUTUNG: '+(st.guess||'keine gewählt')+(st.guess==='B'?'  → stimmt':'  → richtig ist B (Spannung sinkt kaum)'));L.push('');
-  L.push('MESSTABELLE SOLARMODUL');MROWS.forEach(function(x){var m=st.meas[x.id]||{};L.push('  '+x.light+' % Licht: U = '+(m.U||'–')+' V, I = '+(m.I||'–')+' mA, P = '+(m.P||'–')+' mW'+(m.ok?'  ✓':''));});L.push('');
+  L.push('MESSTABELLE SOLARMODUL');MROWS.forEach(function(x){var m=st.meas[x.id]||{};L.push('  '+x.lab+': U = '+(m.U||'–')+' V, I = '+(m.I||'–')+' mA, P = '+(m.P||'–')+' mW'+(m.ok?'  ✓':''));});L.push('  Anteil 95 mW von 475 mW: '+((st.c.c2||{}).v||'–')+' %'+((st.c.c2||{}).ok?'  ✓':''));L.push('');
   L.push('WINDKRAFT');L.push('  P bei 3 m/s: '+((st.c.c3b||{}).v||'–')+' mW · P bei 6 m/s: '+((st.c.c3c||{}).v||'–')+' mW');L.push('');
   L.push('VERSUCHE (wie oft geprüft bzw. eine Antwort gewählt wurde, bis es richtig war)');var tt=triesLines(L,TL,'c6');
   var tipsN=Object.keys(st.tips).reduce(function(a,k){return a+st.tips[k];},0);L.push('  Tipps insgesamt: '+tipsN);
@@ -598,7 +598,7 @@ function resText(){var r=st.res||{},d=new Date(),L=[];
   return L.join('\r\n');}
 
 var lastSt=null;
-function render(){if(st.station!==lastSt){if(STATIONS[st.station].key==='s2'){st.load=true;}if(STATIONS[st.station].key==='s1'){st.light=100;}lastSt=st.station;}
+function render(){if(st.station!==lastSt){if(STATIONS[st.station].key==='s2'){st.load=true;st.light=100;}if(STATIONS[st.station].key==='s1'){st.light=100;}lastSt=st.station;}
   renderRoute();renderCtl();[r1,r2,r3,r4,r5,r6][st.station]();resize();}
 bindReset();initSave();
 window.addEventListener('resize',resize);
