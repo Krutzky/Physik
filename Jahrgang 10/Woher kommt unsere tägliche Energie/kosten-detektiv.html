@@ -178,6 +178,24 @@ table.mt td.v b{font-size:16px}
 table.mt td input.num{width:4.2em}
 table.mt tr{cursor:pointer}
 .reset.t{border-color:#E8892B;color:#FFD9B0}
+.abg-ov{position:fixed;inset:0;background:rgba(2,8,40,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto;z-index:60}
+.abg-box{background:var(--surface);color:var(--ink);border-radius:16px;max-width:560px;width:100%;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.abg-box h2{margin:0}
+.abg-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.abg-in{border:2px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface);color:var(--ink);font:inherit}
+.abg-copy{background:var(--accent);color:var(--accent-ink);border:none;border-radius:999px;padding:12px 22px;font-weight:700;font-size:18px}
+.abg-fb{font-weight:700;min-height:1.4em}
+.abg-fb.ok{color:var(--ok)} .abg-fb.bad{color:var(--bad)}
+.savebtn{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700;padding:6px 14px;font-size:14px}
+.savebtn.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,137,43,.7)}50%{box-shadow:0 0 0 8px rgba(232,137,43,0)}}
+.dlg{position:fixed;inset:0;background:rgba(2,12,69,.55);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) 16px 16px;z-index:50;overflow-y:auto}
+.dlgcard{max-width:640px;width:100%;margin-top:4vh}
+.dlghead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dlghead h3{margin:0;font-family:var(--f-display);font-size:20px}
+.xbtn{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;width:40px;height:40px;font-size:20px;line-height:1;color:var(--ink)}
+.stand{border-radius:12px;padding:10px 12px;background:var(--surface-2,var(--bg));font-size:15px}
+.stand b{font-family:var(--f-display)}
 </style>
 </head>
 <body>
@@ -185,6 +203,7 @@ table.mt tr{cursor:pointer}
   <div class="hwrap">
     <div class="brand"><b>Kosten-Detektiv</b><span>Was kostet uns der Strom?</span></div>
     <nav class="route" id="route" aria-label="Stationen"></nav>
+    <button class="reset savebtn" id="saveOpen" type="button" aria-haspopup="dialog">Speichern</button>
     <button class="reset" id="reset" type="button">Neu starten</button>
   </div>
 </header>
@@ -201,6 +220,7 @@ table.mt tr{cursor:pointer}
     <section class="card stack" id="task"></section>
   </aside>
 </main>
+<div class="dlg" id="saveDlg" hidden role="dialog" aria-modal="true" aria-labelledby="saveTitle"><section class="card stack dlgcard" id="saveBody"></section></div>
 
 <script>
 (function(){
@@ -227,8 +247,8 @@ var DEV=[
 var st={station:0,done:[false,false,false,false,false,false],guess:null,dev:'wk',cmp:true,mins:{},
   c:{},m:{},gaps:{},gapsOk:false,res:{},tries:{},help:{},tips:{},t0:null};
 DEV.forEach(function(d){st.mins[d.id]=d.min;});
-function save(){try{localStorage.setItem(KEY,JSON.stringify({station:st.station,done:st.done,guess:st.guess,c:st.c,m:st.m,gaps:st.gaps,gapsOk:st.gapsOk,res:st.res,tries:st.tries,help:st.help,tips:st.tips,t0:st.t0}));}catch(e){}}
-function load(){try{var x=JSON.parse(localStorage.getItem(KEY)||'null');if(!x)return;['station','guess','c','m','gaps','gapsOk','res','tries','help','tips','t0'].forEach(function(k){if(x[k]!=null)st[k]=x[k];});
+function save(){try{localStorage.setItem(KEY,JSON.stringify({station:st.station,done:st.done,guess:st.guess,c:st.c,m:st.m,gaps:st.gaps,gapsOk:st.gapsOk,res:st.res,tries:st.tries,help:st.help,tips:st.tips,t0:st.t0,saves:st.saves,remindOff:st.remindOff}));}catch(e){}}
+function load(){try{var x=JSON.parse(localStorage.getItem(KEY)||'null');if(!x)return;['station','guess','c','m','gaps','gapsOk','res','tries','help','tips','t0','saves','remindOff'].forEach(function(k){if(x[k]!=null)st[k]=x[k];});
   if(x.done){st.done=x.done;while(st.done.length<6)st.done.push(false);}}catch(e){}}
 /* ---------- gemeinsame Bausteine (wie Regenbogen-Labor) ---------- */
 function tryInc(k,ok,val){var t=st.tries[k]||(st.tries[k]={n:0,ok:false,first:null});if(t.ok)return;t.n++;if(t.first===null)t.first=!!ok;if(ok)t.ok=true;else if(val!=null&&val!==''){t.w=t.w||[];if(t.w.length<12)t.w.push(val);}save();}
@@ -286,16 +306,43 @@ function strip(t){return String(t).replace(/<[^>]+>/g,'');}
 
 /* Ergebnisse speichern (IServ) */
 function resFile(){var r=st.res||{};var n=((r.name||'Name')+'_'+(r.klasse||'')).replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,'_').replace(/_+$/,'');return APP.file+'_'+n+'.txt';}
+var NCORE=STATIONS.filter(function(x){return !x.pro;}).length;
+function standInfo(){var n=st.done.slice(0,NCORE).filter(Boolean).length,cur=STATIONS[st.station]?STATIONS[st.station].name:'';
+  if(n>=NCORE)return '<b>Alle '+NCORE+' Stationen geschafft.</b>'+(st.done[NCORE]?' Profi-Zusatz auch!':(STATIONS[st.station].pro?' Ihr seid gerade beim Profi-Zusatz ★.':' Wenn noch Zeit ist: Profi-Zusatz ★.'));
+  return '<b>Zwischenstand: '+n+' von '+NCORE+' Stationen geschafft.</b> Ihr seid gerade bei „'+esc(cur)+'“. Alles, was ihr bis jetzt bearbeitet habt, wird gespeichert.';}
 function resultsHTML(){var r=st.res||{};
-  return '<div class="merk stack" id="resBox" style="border-color:var(--accent)"><h3 style="color:var(--ink)">Ergebnisse speichern</h3>'+
-   '<p class="muted">Tragt eure Namen ein und speichert die Ergebnisse als Textdatei. Ladet die Datei danach bei <b>IServ</b> in der Aufgabe „'+APP.title+'“ hoch.</p>'+
+  return '<div class="dlghead"><h3 id="saveTitle">Ergebnisse speichern</h3><button class="xbtn" type="button" id="saveClose" aria-label="Schließen">×</button></div>'+
+   '<p class="stand" id="standInfo">'+standInfo()+'</p>'+
+   '<p class="muted">Ihr könnt <b>jederzeit</b> speichern, auch wenn ihr noch nicht fertig seid. Speichert ihr später noch einmal, ladet die neue Datei zusätzlich hoch: <b>Die neueste Datei zählt.</b></p>'+
    '<div class="row"><label for="resName">Name(n)</label><input class="num" style="width:13em;text-align:left;padding-inline:8px" id="resName" autocomplete="off" value="'+esc(r.name)+'">'+
    '<label for="resKlasse">Klasse</label><input class="num" style="width:5em" id="resKlasse" autocomplete="off" value="'+esc(r.klasse||APP.klasse)+'"></div>'+
    '<div class="row"><button class="btn pri" type="button" id="resSave">Als Textdatei speichern</button><button class="btn sec" type="button" id="resCopy">Text kopieren</button><button class="btn tip" type="button" id="resShow">Text anzeigen</button></div>'+
-   '<p class="fb" id="resFb"></p><textarea class="free" id="resTxt" rows="12" readonly hidden style="font-family:var(--f-mono);font-size:13px"></textarea>'+
-   '<p class="muted"><b>So geht’s bei IServ:</b> Aufgaben → „'+APP.title+'“ öffnen → Datei hochladen → gespeicherte Datei auswählen (meist im Ordner „Downloads“).</p></div>';}
+   '<p class="fb" id="resFb"></p><textarea class="free" id="resTxt" rows="10" readonly hidden style="font-family:var(--f-mono);font-size:13px"></textarea>'+
+   '<p class="muted"><b>So geht’s bei IServ:</b> Aufgaben → „'+APP.title+'“ öffnen → Datei hochladen → gespeicherte Datei auswählen (meist im Ordner „Downloads“).</p>'+
+   '<div class="row"><button class="btn sec" type="button" id="saveBack">Zurück zur Aufgabe</button></div>';}
+function saveCTA(end){return '<div class="merk stack" style="border-color:var(--accent)"><h3 style="color:var(--ink)">Ergebnisse speichern</h3><p class="muted">'+(end?'Geschafft! Speichert jetzt eure Ergebnisse und ladet sie bei IServ hoch.':'Speichert eure Ergebnisse und ladet sie bei IServ hoch.')+'</p><div class="row"><button class="btn pri" type="button" id="ctaSave">Ergebnisse speichern</button></div></div>';}
+function bindCTA(){var b=$('ctaSave');if(b)b.addEventListener('click',openSave);}
+/* ---------- Start: Name und Klasse ---------- */
+function startDialog(){var r=st.res||{};if(r.name&&r.klasse)return;
+  var ov=document.createElement('div');ov.className='abg-ov';
+  ov.innerHTML='<div class="abg-box" role="dialog" aria-modal="true" aria-labelledby="stH"><p class="eyebrow">Was kostet uns der Strom?</p><h2 id="stH">Willkommen beim Kosten-Detektiv!</h2>'+
+    '<p>Heute findest du heraus, wie viel Energie Geräte brauchen und was der Strom dafür kostet.</p>'+
+    '<p class="muted">Arbeitet ihr zu zweit? Dann tragt beide Namen ein.</p>'+
+    '<div class="abg-row"><label for="stName">Name(n)</label><input class="abg-in" id="stName" autocomplete="off" style="width:14em" value="'+esc(r.name)+'" placeholder="Vorname N."></div>'+
+    '<div class="abg-row"><label for="stKl">Klasse</label><input class="abg-in" id="stKl" autocomplete="off" style="width:6em" value="'+esc(r.klasse)+'" placeholder="10a"></div>'+
+    '<div class="abg-row"><button class="abg-copy" type="button" id="stGo">Los geht’s</button></div><p class="abg-fb bad" id="stFb"></p></div>';
+  document.body.appendChild(ov);var n=ov.querySelector('#stName'),k=ov.querySelector('#stKl');setTimeout(function(){n.focus();},30);
+  function go(){var nm=n.value.trim(),kl=k.value.trim();if(!nm){ov.querySelector('#stFb').textContent='Bitte trage deinen Namen ein.';n.focus();return;}if(!kl){ov.querySelector('#stFb').textContent='Bitte trage deine Klasse ein.';k.focus();return;}
+    st.res=st.res||{};st.res.name=nm;st.res.klasse=kl;save();ov.remove();}
+  ov.querySelector('#stGo').addEventListener('click',go);[n,k].forEach(function(el){el.addEventListener('keydown',function(e){if(e.key==='Enter')go();});});}
+var lastFocus=null;
+function openSave(){lastFocus=document.activeElement;$('saveBody').innerHTML=resultsHTML();$('saveDlg').hidden=false;document.body.style.overflow='hidden';
+  bindResults();$('saveClose').addEventListener('click',closeSave);$('saveBack').addEventListener('click',closeSave);
+  $('saveOpen').classList.remove('pulse');st.remindOff=true;save();
+  setTimeout(function(){var n=$('resName');(n&&!n.value?n:$('resSave')).focus();},30);}
+function closeSave(){$('saveDlg').hidden=true;document.body.style.overflow='';$('saveBody').innerHTML='';if(lastFocus&&lastFocus.focus)try{lastFocus.focus();}catch(e){}}
 function bindResults(){
-  if(!$('resBox'))return;st.res=st.res||{};
+  if(!$('resSave'))return;st.res=st.res||{};
   function upd(){st.res.name=$('resName').value.trim();st.res.klasse=$('resKlasse').value.trim();save();if(!$('resTxt').hidden)$('resTxt').value=resText();}
   $('resName').addEventListener('input',upd);$('resKlasse').addEventListener('input',upd);
   function msg(ok,t){var f=$('resFb');f.className='fb '+(ok?'ok':'bad');f.textContent=t;}
@@ -304,7 +351,7 @@ function bindResults(){
   $('resCopy').addEventListener('click',function(){if(!need())return;var txt=resText(),t=$('resTxt');t.hidden=false;t.value=txt;$('resShow').textContent='Text ausblenden';
     function sel(){t.focus();t.select();msg(true,'Text markiert. Kopiere ihn mit Strg+C (Tablet: gedrückt halten → Kopieren).');}
     try{navigator.clipboard.writeText(txt).then(function(){msg(true,'Kopiert! Ihr könnt den Text jetzt bei IServ einfügen.');},sel);}catch(e){sel();}});
-  $('resSave').addEventListener('click',function(){if(!need())return;var txt=resText(),name=resFile();
+  $('resSave').addEventListener('click',function(){if(!need())return;var txt=resText(),name=resFile();st.saves=(st.saves||0)+1;save();
     function blobSave(){try{var b=new Blob(['﻿'+txt],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},4000);
       msg(true,'Datei „'+name+'“ wird gespeichert. Falls nichts passiert: „Text kopieren“ benutzen.');}catch(e){msg(false,'Speichern klappt hier nicht. Benutzt „Text kopieren“.');}}
     var c=window.claude;
@@ -449,7 +496,7 @@ var GAPS=[{id:'g1',pre:'Die elektrische Leistung berechnet man mit',post:'.',a:0
 function r5(){var s=st;var html=head(4,'Das nehmen wir mit');
   if(!s.gapsOk){html+='<div class="q gap"><p><b>Lückentext:</b> Wähle das passende Wort.</p><ol>'+GAPS.map(function(g){var v=s.gaps[g.id];return '<li>'+g.pre+' <select class="sel" data-g="'+g.id+'"><option value="">…</option>'+WORDS.map(function(w,j){return '<option value="'+j+'"'+(v===j?' selected':'')+'>'+w+'</option>';}).join('')+'</select> '+g.post+'</li>';}).join('')+'</ol><div class="row"><button class="btn pri" type="button" id="c5">Prüfen</button></div><p class="fb" id="fb5"></p></div>';}
   else{html+='<div class="merk"><h3>Merksatz: Was kostet uns der Strom?</h3><ol style="margin:0;padding-left:1.2em">'+GAPS.map(function(g){return '<li>'+g.pre+' <span class="k">'+WORDS[g.a]+'</span> '+g.post+'</li>';}).join('')+'</ol></div>'+
-    '<div class="merk"><h3>Der Rechenweg</h3><p>1. Gegeben und gesucht notieren · 2. Einheiten umrechnen (W → kW, min → h) · 3. E = P · t · 4. Kosten = E · Preis · 5. Antwortsatz</p></div>'+resultsHTML();finish(4);}
+    '<div class="merk"><h3>Der Rechenweg</h3><p>1. Gegeben und gesucht notieren · 2. Einheiten umrechnen (W → kW, min → h) · 3. E = P · t · 4. Kosten = E · Preis · 5. Antwortsatz</p></div>'+saveCTA(true);finish(4);}
   html+=(st.done[4]?'<p class="win"><b>Fertig!</b> Schnell gewesen? Probiert den Profi-Zusatz.</p>':'')+'<div class="row">'+nextBtn(4)+'</div>';
   $('task').innerHTML=html;
   Array.prototype.forEach.call(document.querySelectorAll('[data-g]'),function(sl){sl.addEventListener('change',function(){s.gaps[sl.dataset.g]=sl.value===''?null:+sl.value;sl.className='sel';save();});});
@@ -458,26 +505,27 @@ function r5(){var s=st;var html=head(4,'Das nehmen wir mit');
     GAPS.forEach(function(g){document.querySelector('[data-g="'+g.id+'"]').className='sel '+(s.gaps[g.id]===g.a?'ok':'bad');});
     if(!wrong.length){s.gapsOk=true;save();r5();return;}fb.className='fb bad';fb.textContent=wrong.length+(wrong.length>1?' Lücken stimmen':' Lücke stimmt')+' noch nicht. Jedes Wort passt genau einmal.';
     showHelp(fb,'s5gaps',function(){GAPS.forEach(function(g){s.gaps[g.id]=g.a;});save();r5();});});
-  bindResults();bindNext();}
+  bindCTA();bindNext();}
 
 /* Profi */
 var C6a={id:'c6a',q:'Stelle P = U · I nach I um. Welche Stromstärke fließt durch den <b>Wasserkocher</b> (2000 W, 230 V)? (1 Nachkommastelle)',unit:'A',ans:8.7,tol:0.06,errs:[[460000,100,'Du hast malgenommen. I = P : U.'],[0.115,0.005,'Du hast U : P gerechnet. Richtig ist I = P : U.']],tips:['I = P : U.','I = 2000 W : 230 V = ?'],sol:'Richtig! I = 2000 W : 230 V ≈ 8,7 A.'};
 var C6b={id:'c6b',q:'Wasserkocher (2000 W) und Föhn (1800 W) laufen gleichzeitig an einem Stromkreis. Welche Stromstärke fließt insgesamt? (1 Nachkommastelle)',unit:'A',ans:16.5,tol:0.1,tips:['Gesamtleistung: 2000 W + 1800 W = 3800 W.','I = 3800 W : 230 V = ?'],sol:'Richtig! I = 3800 W : 230 V ≈ 16,5 A.'};
 var Q6c={q:'Die Sicherung dieses Stromkreises hat <b>16 A</b>. Was passiert?',o:['Die Sicherung löst aus, weil mehr als 16 A fließen.','Nichts, 16,5 A sind fast 16 A.','Der Föhn wird langsamer.'],a:0,ok:'Genau! Deshalb sollte man große Verbraucher auf verschiedene Stromkreise verteilen.',bad:['','Die Sicherung schaltet ab, sobald mehr als 16 A fließen, um die Leitungen zu schützen.','Die Sicherung schaltet ab, um die Leitungen vor Überhitzung zu schützen.']};
-function r6(){stationRender(5,'Formeln umstellen',null,[C(C6a,r6),C(C6b,r6),M('m6c',Q6c,r6)],'<b>Profi!</b> Mit I = P : U kannst du prüfen, ob eine Sicherung hält.');}
+function r6(){stationRender(5,'Formeln umstellen',null,[C(C6a,r6),C(C6b,r6),M('m6c',Q6c,r6)],'<b>Profi!</b> Mit I = P : U kannst du prüfen, ob eine Sicherung hält.',function(){return saveCTA(true);});bindCTA();}
 
 /* ---------- Ergebnisse ---------- */
 var TL=[['m1a','Leistung · Typenschild lesen'],['c1b','Leistung · P = U · I (Toaster)'],['c1c','Leistung · P = U · I (Föhn)'],['m2a','Energie · Einheit kWh'],['c2b','Energie · W → kW'],['c2c','Energie · min → h'],['c2d','Energie · E = P · t (Föhn)'],['c2e','Energie · E = P · t (LED)'],['c3a','Kosten · pro Tag'],['c3b','Kosten · pro Jahr'],['c3c','Kosten · alles in einem (Fernseher)'],['c4a','Stromfresser · Router'],['c4b','Stromfresser · Wasserkocher'],['m4c','Stromfresser · Vergleich'],['m4d','Stromfresser · Begründung'],['s5gaps','Merksatz · Lückentext'],['c6a','Profi · I = P : U'],['c6b','Profi · Gesamtstrom'],['m6c','Profi · Sicherung']];
 function resText(){var r=st.res||{},d=new Date(),L=[];
   L.push('KOSTEN-DETEKTIV · Was kostet uns der Strom?');
   L.push('Name: '+(r.name||'')+'    Klasse: '+(r.klasse||'')+'    Datum: '+d.toLocaleDateString('de-DE')+', '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+  L.push('Stand: '+(st.done.slice(0,NCORE).filter(Boolean).length>=NCORE?'fertig (alle '+NCORE+' Stationen)':'Zwischenstand ('+st.done.slice(0,NCORE).filter(Boolean).length+' von '+NCORE+' Stationen, zuletzt bei „'+STATIONS[st.station].name+'“)'));
   L.push('Geschafft: '+STATIONS.map(function(x,i){return x.name+(st.done[i]?' ✓':' –');}).join(' | '));L.push('');
   L.push('MEINE VERMUTUNG: '+(st.guess||'keine gewählt')+(st.guess==='B'?'  → stimmt':'  → richtig ist B (Router)'));L.push('');
   L.push('RECHENAUFGABEN (Eingabe · Tipps)');
   TL.forEach(function(x){if(x[0].charAt(0)!=='c')return;var c=st.c[x[0]];L.push('  '+x[1]+': '+(c&&c.v?c.v:'–')+(c&&c.ok?'  ✓':'')+'  · Tipps: '+(st.tips[x[0]]||0));});L.push('');
   L.push('VERSUCHE (wie oft geprüft bzw. eine Antwort gewählt wurde, bis es richtig war)');var tt=triesLines(L,TL,'c6');
   var tipsN=Object.keys(st.tips).reduce(function(a,k){return a+st.tips[k];},0);L.push('  Tipps insgesamt: '+tipsN);
-  var data={v:1,name:r.name||'',klasse:r.klasse||'',ts:Date.now(),done:st.done,guess:st.guess,tries:st.tries,tips:st.tips,help:tt.help,mins:tt.mins,resets:resets()};
+  var data={v:1,name:r.name||'',klasse:r.klasse||'',ts:Date.now(),done:st.done,guess:st.guess,tries:st.tries,tips:st.tips,help:tt.help,mins:tt.mins,resets:resets(),cur:st.station,saves:(st.saves||0)+1};
   var json=JSON.stringify(data);L.push('');L.push('Die beiden folgenden Zeilen sind für die Auswertung. Bitte nicht verändern.');L.push('#DATEN '+json);L.push('#PRUEF '+fnv('KD-v1|'+json));
   return L.join('\r\n');}
 
@@ -492,10 +540,15 @@ function render(){renderRoute();renderCtl();
   resize();}
 bindReset();
 window.addEventListener('resize',resize);
+$('saveOpen').addEventListener('click',openSave);
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('saveDlg').hidden)closeSave();});
+$('saveDlg').addEventListener('click',function(e){if(e.target===this)closeSave();});
+function remind(){if(!st.remindOff&&st.t0&&Date.now()-st.t0>25*60000)$('saveOpen').classList.add('pulse');}
+setInterval(remind,30000);
 if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)');if(mq.addEventListener)mq.addEventListener('change',draw);}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
 load();if(!st.t0){st.t0=Date.now();save();}if(!unlocked(st.station))st.station=0;
-render();
+render();remind();startDialog();
 })();
 
 </script>
