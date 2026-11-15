@@ -2,9 +2,11 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Optik-Werkstatt</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Lexend:wght@500;600;700&display=swap">
 <style>
 /* Layout wie „Linsen-Labor“: Kopfleiste mit Stationen-Weg · links optische Bank + Dia- und Schirm-Ansicht mit Lineal (fest) · rechts Steuerpult + Stationsaufgabe. */
 :root{
@@ -155,21 +157,6 @@ table.mt td.v b{font-size:16px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--ink-soft);padding:0 6px 4px}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
-
-/* ---- Ergebnisse abgeben ---- */
-.abg-btn{background:var(--accent);color:var(--accent-ink);border:none;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700}
-.abg-ov{position:fixed;inset:0;background:rgba(2,8,40,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto;z-index:50}
-.abg-box{background:var(--surface);color:var(--ink);border-radius:16px;max-width:560px;width:100%;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
-.abg-box h2{margin:0}
-.abg-box ol{margin:0;padding-left:1.3em}
-.abg-box li{margin-bottom:6px}
-.abg-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.abg-in{border:2px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface);color:var(--ink);font:inherit}
-.abg-copy{background:var(--accent);color:var(--accent-ink);border:none;border-radius:999px;padding:12px 22px;font-weight:700;font-size:18px}
-.abg-close{background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:700;color:var(--ink)}
-.abg-fb{font-weight:700;min-height:1.4em}
-.abg-fb.ok{color:var(--ok)} .abg-fb.bad{color:var(--bad)}
-.abg-txt{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;border:2px solid var(--line);border-radius:10px;padding:8px;background:var(--surface-2);color:var(--ink)}
 </style>
 <style>
 .ctlrow{display:flex;flex-direction:column;gap:4px}
@@ -184,6 +171,16 @@ table.mt td.v b{font-size:16px}
 .pic svg{width:100%;max-width:84px;height:auto}
 .choice.grid4{display:grid;grid-template-columns:repeat(4,1fr)}
 @media (max-width:440px){.choice.grid4{grid-template-columns:1fr 1fr}}
+.savebtn{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700;padding:6px 14px;font-size:14px}
+.savebtn.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,137,43,.7)}50%{box-shadow:0 0 0 8px rgba(232,137,43,0)}}
+.dlg{position:fixed;inset:0;background:rgba(2,12,69,.55);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) 16px 16px;z-index:50;overflow-y:auto}
+.dlgcard{max-width:640px;width:100%;margin-top:4vh}
+.dlghead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dlghead h3{margin:0;font-family:var(--f-display);font-size:20px}
+.xbtn{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;width:40px;height:40px;font-size:20px;line-height:1;color:var(--ink)}
+.stand{border-radius:12px;padding:10px 12px;background:var(--surface-2,var(--bg));font-size:15px}
+.stand b{font-family:var(--f-display)}
 </style>
 </head>
 <body>
@@ -191,7 +188,8 @@ table.mt td.v b{font-size:16px}
   <div class="hwrap">
     <div class="brand"><b>Optik-Werkstatt</b><span>Wie helfen uns Linsen beim Sehen?</span></div>
     <nav class="route" id="route" aria-label="Stationen"></nav>
-    <button class="abg-btn" id="abgBtn" type="button">Ergebnisse abgeben</button><button class="reset" id="reset" type="button">Neu starten</button>
+    <button class="reset savebtn" id="saveOpen" type="button" aria-haspopup="dialog">Speichern</button>
+    <button class="reset" id="reset" type="button">Neu starten</button>
   </div>
 </header>
 
@@ -212,6 +210,7 @@ table.mt td.v b{font-size:16px}
     <section class="card stack" id="task"></section>
   </aside>
 </main>
+<div class="dlg" id="saveDlg" hidden role="dialog" aria-modal="true" aria-labelledby="saveTitle"><section class="card stack dlgcard" id="saveBody"></section></div>
 
 <script>
 (function(){
@@ -631,7 +630,7 @@ function r4(){
   $('task').innerHTML='<div><p class="eyebrow">Station 4 · Merksatz</p><h2>Unser Merksatz</h2></div><p>Wähle die passenden Wörter. Im Modell kannst du alles nachprüfen.</p><p class="hint"><b>Wortspeicher:</b> '+WORTE+'</p>'+
    '<div class="gap"><ol>'+GAPS.map(function(g,i){return '<li>'+g.pre+'<select class="sel" id="g'+i+'" aria-label="Lücke '+(i+1)+'"><option value="">…</option>'+g.o.map(function(o,j){return '<option value="'+j+'">'+o+'</option>';}).join('')+'</select>'+g.post+'</li>';}).join('')+'</ol></div>'+
    '<div class="row"><button class="btn pri" type="button" id="c4">Prüfen</button><span class="fb" id="fb4"></span></div>'+
-   (st.s4.ok?MERK+'<p class="muted">Schreibe den Merksatz gleich in dein Heft. Wir besprechen ihn gemeinsam.</p>':'')+refl+tom+(st.s4.tomOk?resultsHTML():'')+'<div class="row">'+nextBtn(3)+'</div>';
+   (st.s4.ok?MERK+'<p class="muted">Schreibe den Merksatz gleich in dein Heft. Wir besprechen ihn gemeinsam.</p>':'')+refl+tom+(st.s4.tomOk?saveCTA(true):'')+'<div class="row">'+nextBtn(3)+'</div>';
   GAPS.forEach(function(g,i){var el=$('g'+i),v=st.s4.gaps[i];if(st.s4.ok){el.value=String(g.a);el.className='sel ok';}else if(v!=null&&v!=='')el.value=v;
     el.addEventListener('change',function(){st.s4.gaps[i]=this.value;this.className='sel';save();});});
   $('c4').addEventListener('click',function(){if(st.s4.ok)return;var wrong=0,empty=0;GAPS.forEach(function(g,i){var s=$('g'+i);if(s.value===''){empty++;return;}var ok=+s.value===g.a;s.className='sel '+(ok?'ok':'bad');if(!ok)wrong++;});
@@ -642,7 +641,7 @@ function r4(){
   if(st.s4.ok){$('refl').addEventListener('input',function(){st.s4.refl=this.value;save();});
     bindMC('tom',TOM.a,'s4tom',TOM.ok,TOM.w,function(){st.s4.tomOk=true;finish(3);save();r4();showFb('tom',true,TOM.ok);},function(j){st.s4.tom=j;});
     if(st.s4.tomOk)showFb('tom',true,TOM.ok);}
-  bindResults();bindNext();
+  bindCTA();bindNext();
 }
 
 /* ---------- Station 5: Profi ---------- */
@@ -655,10 +654,10 @@ var P5=[
 function r5(){
   $('task').innerHTML='<div><p class="eyebrow pro">Profi-Zusatz ★</p><h2>Knobel-Experimente mit der Lupe</h2></div>'+
     P5.map(function(p){var v=st.s5[p.id];return '<div class="q"><h3>'+p.title+'</h3><p>'+p.task+'</p><p><b>'+p.q+'</b></p><div class="choice" data-p="'+p.id+'">'+p.o.map(function(o,j){return '<button type="button" class="opt'+(v===j?(j===p.a?' ok':' bad'):'')+'" data-j="'+j+'">'+o+'</button>';}).join('')+'</div><p class="fb'+(v===p.a?' ok':(v!=null?' bad':''))+'">'+(v==null?'':(v===p.a?p.ok:p.bad))+'</p></div>';}).join('')+
-    (st.done[4]?'<p class="win"><b>Profi-Level geschafft!</b> Erkläre einem Mitschüler eins der beiden Experimente.</p>':'')+resultsHTML();
+    (st.done[4]?'<p class="win"><b>Profi-Level geschafft!</b> Erkläre einem Mitschüler eins der beiden Experimente.</p>':'')+saveCTA(true);
   Array.prototype.forEach.call(document.querySelectorAll('.choice[data-p]'),function(box){var p=P5.filter(function(x){return x.id===box.dataset.p;})[0];
     Array.prototype.forEach.call(box.children,function(b){b.addEventListener('click',function(){var j=+b.dataset.j;tryInc('s5'+p.id,j===p.a,j);st.s5[p.id]=j;save();if(P5.every(function(x){return st.s5[x.id]===x.a;}))finish(4);r5();});});});
-  bindResults();
+  bindCTA();
 }
 
 /* ---------- Ergebnisse speichern ---------- */
@@ -667,6 +666,7 @@ function resText(){
   function a(q,v){return v==null?'(keine Antwort)':q.o[v]+(v===q.a?'  ✓':'  ✗');}
   L.push('OPTIK-WERKSTATT · Lupe, Auge und Brille');
   L.push('Name: '+(r.name||'')+'    Klasse: '+(r.klasse||'')+'    Datum: '+d.toLocaleDateString('de-DE')+', '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+  L.push('Stand: '+(st.done.slice(0,4).filter(Boolean).length>=4?'fertig (alle 4 Stationen)':'Zwischenstand ('+st.done.slice(0,4).filter(Boolean).length+' von 4 Stationen, zuletzt bei „'+STATIONS[st.station].name+'“)'));
   L.push('Geschafft: '+STATIONS.map(function(x,i){return x.name+(st.done[i]?' ✓':' –');}).join(' | '));
   L.push('');
   L.push('MEINE VERMUTUNG: '+(st.guess?guessName(st.guess):'keine gewählt')+(st.guess==='A'?'  → stimmt':'  → richtig ist A'));
@@ -712,23 +712,36 @@ function resText(){
   L.push('PROFI-ZUSATZ ★');
   P5.forEach(function(x){var v=st.s5[x.id];L.push('  '+x.title+': '+(v==null?'(nicht bearbeitet)':x.o[v]+(v===x.a?'  ✓':'  ✗')));});
   var data={v:1,name:r.name||'',klasse:r.klasse||'',ts:Date.now(),done:st.done,guess:st.guess,tries:st.tries,tips:{s2:st.s2.tip||0,s3:st.s3.tip||0},
-    own:st.s1.own||'',refl:st.s4.refl||'',tom:st.s4.tom,s5:st.s5,help:Object.keys(st.help||{}),mins:mins0,resets:resets()};
+    own:st.s1.own||'',refl:st.s4.refl||'',tom:st.s4.tom,s5:st.s5,help:Object.keys(st.help||{}),mins:mins0,resets:resets(),cur:st.station,saves:(st.saves||0)+1};
   var json=JSON.stringify(data);
   L.push('');L.push('Die beiden folgenden Zeilen sind für die Auswertung. Bitte nicht verändern.');
   L.push('#DATEN '+json);L.push('#PRUEF '+fnv('OW-v1|'+json));
   return L.join('\r\n');
 }
 function resFile(){var r=st.res||{};var n=((r.name||'Name')+'_'+(r.klasse||'')).replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,'_').replace(/_+$/,'');return 'Optik-Werkstatt_'+n+'.txt';}
+function standInfo(){var n=st.done.slice(0,4).filter(Boolean).length,cur=STATIONS[st.station]?STATIONS[st.station].name:'';
+  if(n>=4)return '<b>Alle 4 Stationen geschafft.</b>'+(st.done[4]?' Profi-Zusatz auch!':' Wenn noch Zeit ist: Profi-Zusatz ★.');
+  return '<b>Zwischenstand: '+n+' von 4 Stationen geschafft.</b> Ihr seid gerade bei „'+esc(cur)+'“. Alles, was ihr bis jetzt bearbeitet habt, wird gespeichert.';}
 function resultsHTML(){var r=st.res||{};
-  return '<div class="merk stack" id="resBox" style="border-color:var(--accent)"><h3 style="color:var(--ink)">Ergebnisse speichern</h3>'+
-   '<p class="muted">Tragt eure Namen ein und speichert die Ergebnisse als Textdatei. Ladet die Datei danach bei <b>IServ</b> in der Aufgabe „Optik-Werkstatt“ hoch.</p>'+
+  return '<div class="dlghead"><h3 id="saveTitle">Ergebnisse speichern</h3><button class="xbtn" type="button" id="saveClose" aria-label="Schließen">×</button></div>'+
+   '<p class="stand" id="standInfo">'+standInfo()+'</p>'+
+   '<p class="muted">Ihr könnt <b>jederzeit</b> speichern, auch wenn ihr noch nicht fertig seid. Speichert ihr später noch einmal, ladet die neue Datei zusätzlich hoch: <b>Die neueste Datei zählt.</b></p>'+
    '<div class="row"><label for="resName">Name(n)</label><input class="num" style="width:13em;text-align:left;padding-inline:8px" id="resName" autocomplete="off" value="'+esc(r.name)+'">'+
    '<label for="resKlasse">Klasse</label><input class="num" style="width:5em" id="resKlasse" autocomplete="off" value="'+esc(r.klasse||'7d')+'"></div>'+
    '<div class="row"><button class="btn pri" type="button" id="resSave">Als Textdatei speichern</button><button class="btn sec" type="button" id="resCopy">Text kopieren</button><button class="btn tip" type="button" id="resShow">Text anzeigen</button></div>'+
-   '<p class="fb" id="resFb"></p><textarea class="free" id="resTxt" rows="12" readonly hidden style="font-family:var(--f-mono);font-size:13px"></textarea>'+
-   '<p class="muted"><b>So geht’s bei IServ:</b> Aufgaben → „Optik-Werkstatt“ öffnen → Datei hochladen → in <b>Dateien → Downloads</b> die gespeicherte Datei auswählen → Abgeben.</p></div>';}
+   '<p class="fb" id="resFb"></p><textarea class="free" id="resTxt" rows="10" readonly hidden style="font-family:var(--f-mono);font-size:13px"></textarea>'+
+   '<p class="muted"><b>So geht’s bei IServ:</b> Aufgaben → „Optik-Werkstatt“ öffnen → Datei hochladen → gespeicherte Datei auswählen (meist im Ordner „Downloads“).</p>'+
+   '<div class="row"><button class="btn sec" type="button" id="saveBack">Zurück zur Aufgabe</button></div>';}
+function saveCTA(end){return '<div class="merk stack" style="border-color:var(--accent)"><h3 style="color:var(--ink)">Ergebnisse speichern</h3><p class="muted">'+(end?'Geschafft! Speichert jetzt eure Ergebnisse und ladet sie bei IServ hoch.':'Speichert eure Ergebnisse und ladet sie bei IServ hoch.')+'</p><div class="row"><button class="btn pri" type="button" id="ctaSave">Ergebnisse speichern</button></div></div>';}
+function bindCTA(){var b=$('ctaSave');if(b)b.addEventListener('click',openSave);}
+var lastFocus=null;
+function openSave(){lastFocus=document.activeElement;$('saveBody').innerHTML=resultsHTML();$('saveDlg').hidden=false;document.body.style.overflow='hidden';
+  bindResults();$('saveClose').addEventListener('click',closeSave);$('saveBack').addEventListener('click',closeSave);
+  $('saveOpen').classList.remove('pulse');st.remindOff=true;save();
+  setTimeout(function(){var n=$('resName');(n&&!n.value?n:$('resSave')).focus();},30);}
+function closeSave(){$('saveDlg').hidden=true;document.body.style.overflow='';$('saveBody').innerHTML='';if(lastFocus&&lastFocus.focus)try{lastFocus.focus();}catch(e){}}
 function bindResults(){
-  if(!$('resBox'))return;st.res=st.res||{};
+  if(!$('resSave'))return;st.res=st.res||{};
   function upd(){st.res.name=$('resName').value.trim();st.res.klasse=$('resKlasse').value.trim();save();if(!$('resTxt').hidden)$('resTxt').value=resText();}
   $('resName').addEventListener('input',upd);$('resKlasse').addEventListener('input',upd);
   function msg(ok,t){var f=$('resFb');f.className='fb '+(ok?'ok':'bad');f.textContent=t;}
@@ -737,7 +750,7 @@ function bindResults(){
   $('resCopy').addEventListener('click',function(){if(!need())return;var txt=resText(),t=$('resTxt');t.hidden=false;t.value=txt;$('resShow').textContent='Text ausblenden';
     function sel(){t.focus();t.select();msg(true,'Text markiert. Kopiere ihn mit Strg+C (Tablet: gedrückt halten → Kopieren).');}
     try{navigator.clipboard.writeText(txt).then(function(){msg(true,'Kopiert! Ihr könnt den Text jetzt bei IServ einfügen.');},sel);}catch(e){sel();}});
-  $('resSave').addEventListener('click',function(){if(!need())return;var txt=resText(),name=resFile();
+  $('resSave').addEventListener('click',function(){if(!need())return;var txt=resText(),name=resFile();st.saves=(st.saves||0)+1;save();
     function blobSave(){try{var b=new Blob(['﻿'+txt],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},4000);
       msg(true,'Datei „'+name+'“ wird gespeichert. Falls nichts passiert: „Text kopieren“ benutzen.');}catch(e){msg(false,'Speichern klappt hier nicht. Benutzt „Text kopieren“.');}}
     var c=window.claude;
@@ -756,65 +769,16 @@ $('reset').addEventListener('click',function(){var b=this;
   if(!b._armed){b._armed=true;b.textContent='Wirklich alles löschen?';setTimeout(function(){b._armed=false;b.textContent='Neu starten';},3500);return;}
   try{localStorage.setItem(RKEY,String(resets()+1));localStorage.removeItem(KEY);}catch(e){}location.reload();});
 window.addEventListener('resize',resize);
+$('saveOpen').addEventListener('click',openSave);
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('saveDlg').hidden)closeSave();});
+$('saveDlg').addEventListener('click',function(e){if(e.target===this)closeSave();});
+function remind(){if(!st.remindOff&&st.t0&&Date.now()-st.t0>25*60000)$('saveOpen').classList.add('pulse');}
+setInterval(remind,30000);
 if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)');if(mq.addEventListener)mq.addEventListener('change',draw);}
 new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
 load();if(!st.t0){st.t0=Date.now();save();}if(!unlocked(st.station))st.station=0;
-render();
-
-/* ---------- Ergebnisse abgeben (jederzeit) ---------- */
-(function(){
-  var APP='Optik-Werkstatt';
-  var AKEY=(typeof KEY!=='undefined'?KEY:APP)+'-abgabe';
-  function lget(){try{return JSON.parse(localStorage.getItem(AKEY)||'{}')||{};}catch(e){return {};}}
-  function lset(o){try{localStorage.setItem(AKEY,JSON.stringify(o));}catch(e){}}
-  var A=lget();if(!A.t0){A.t0=Date.now();lset(A);}
-  function e(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
-  
-  function abgText(A){st.res=st.res||{};st.res.name=A.name;st.res.klasse=A.klasse;try{save();}catch(err){}
-    var n=0;STATIONS.forEach(function(x,i){if(st.done[i])n++;});
-    return resText().replace('\r\nGeschafft: ','\r\nGeschafft ('+n+' von '+STATIONS.length+'): ');}
-
-  var ov=document.createElement('div');ov.className='abg-ov';ov.hidden=true;
-  ov.innerHTML='<div class="abg-box" role="dialog" aria-modal="true" aria-labelledby="abgH">'+
-    '<h2 id="abgH">Ergebnisse abgeben</h2>'+
-    '<ol><li>Tragt eure <b>Namen</b> und eure <b>Klasse</b> ein.</li>'+
-    '<li>Tippt auf <b>„Datei herunterladen“</b>. Auf dem iPad fragt Safari nach: Tippt auf <b>„Laden“</b>. Die Datei liegt dann in der App <b>Dateien</b> im Ordner <b>Downloads</b>.</li>'+
-    '<li>Öffnet <b>IServ → Aufgaben → „'+e(APP)+'“</b>, ladet die Datei hoch (aus <b>Dateien → Downloads</b>) und tippt auf <b>Abgeben</b>.</li></ol>'+
-    '<p class="muted">Ihr könnt auch abgeben, wenn ihr noch nicht fertig seid. In der Datei steht, wie weit ihr gekommen seid.</p>'+
-    '<div class="abg-row"><label for="abgName">Namen</label><input class="abg-in" id="abgName" autocomplete="off" style="width:12em">'+
-    '<label for="abgKl">Klasse</label><input class="abg-in" id="abgKl" autocomplete="off" style="width:5em"></div>'+
-    '<div class="abg-row"><button class="abg-copy" type="button" id="abgDl">Datei herunterladen</button>'+
-    '<button class="abg-close" type="button" id="abgClose">Schließen</button></div>'+
-    '<p class="muted" style="font-size:14px">Klappt das Herunterladen nicht? Dann <button type="button" id="abgCopy" style="background:none;border:none;padding:0;color:var(--blue);text-decoration:underline;font:inherit;cursor:pointer">kopiert den Text</button> und fragt eure Lehrkraft.</p>'+
-    '<p class="abg-fb" id="abgFb"></p>'+
-    '<textarea class="abg-txt" id="abgTxt" rows="10" readonly hidden></textarea></div>';
-  document.body.appendChild(ov);
-  var $n=ov.querySelector('#abgName'),$k=ov.querySelector('#abgKl'),$t=ov.querySelector('#abgTxt'),$f=ov.querySelector('#abgFb');
-  function msg(ok,t){$f.className='abg-fb '+(ok?'ok':'bad');$f.textContent=t;}
-  function open(){A=lget();$n.value=A.name||'';$k.value=A.klasse||'';$t.hidden=true;msg(true,'');ov.hidden=false;setTimeout(function(){($n.value?ov.querySelector('#abgDl'):$n).focus();},30);}
-  function close(){ov.hidden=true;}
-  function upd(){A.name=$n.value.trim();A.klasse=$k.value.trim();lset(A);}
-  $n.addEventListener('input',upd);$k.addEventListener('input',upd);
-  ov.querySelector('#abgClose').addEventListener('click',close);
-  ov.addEventListener('click',function(ev){if(ev.target===ov)close();});
-  document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&!ov.hidden)close();});
-  ov.querySelector('#abgCopy').addEventListener('click',function(){
-    upd();if(!A.name){msg(false,'Tragt zuerst eure Namen ein.');$n.focus();return;}
-    var txt=abgText(A);$t.value=txt;
-    function sel(){$t.hidden=false;$t.focus();$t.select();msg(true,'Der Text ist markiert. Tippe lange darauf und wähle „Kopieren“.');}
-    try{navigator.clipboard.writeText(txt).then(function(){msg(true,'Text kopiert.');},sel);}catch(err){sel();}
-  });
-  ov.querySelector('#abgDl').addEventListener('click',function(){
-    upd();if(!A.name){msg(false,'Tragt zuerst eure Namen ein.');$n.focus();return;}
-    var txt=abgText(A).replace(/\r?\n/g,'\r\n'),name=resFile();
-    try{var bl=new Blob(['\ufeff'+txt],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(bl),a=document.createElement('a');
-      a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},10000);
-      msg(true,'Die Datei „'+name+'“ wird heruntergeladen. Ladet sie jetzt in IServ bei der Aufgabe „'+APP+'“ hoch.');}
-    catch(err){msg(false,'Herunterladen klappt hier nicht. Kopiert stattdessen den Text.');}
-  });
-  document.getElementById('abgBtn').addEventListener('click',open);
-})();
+render();remind();
 })();
 </script>
 </body>
