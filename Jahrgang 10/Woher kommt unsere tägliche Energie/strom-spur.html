@@ -220,13 +220,13 @@ table.mt tr{cursor:pointer}
     <section class="card stack" id="task"></section>
   </aside>
 </main>
-<div class="dlg" id="saveDlg" hidden role="dialog" aria-modal="true" aria-labelledby="saveTitle"><section class="card stack dlgcard" id="saveBody"></section></div>
 
+<div class="dlg" id="saveDlg" hidden role="dialog" aria-modal="true" aria-labelledby="saveTitle"><section class="card stack dlgcard" id="saveBody"></section></div>
 <script>
 (function(){
 'use strict';
 var $=function(id){return document.getElementById(id);};
-var APP={title:'Strom-Spur',file:'Strom-Spur',klasse:'10'};
+var APP={title:'Strom-Spur',file:'Strom-Spur',klasse:'10',lesson:'Woher kommt unsere tägliche Energie?',welcome:'Willkommen bei der Strom-Spur!',intro:'Heute verfolgst du den Weg der Energie vom Kraftwerk bis zur Steckdose.'};
 var KEY='strom-spur-v1',RKEY='strom-spur-resets';
 var STATIONS=[
   {key:'s1',name:'Fit-Check',scene:'house'},
@@ -305,10 +305,12 @@ function strip(t){return String(t).replace(/<[^>]+>/g,'');}
 
 /* Ergebnisse speichern (IServ) */
 function resFile(){var r=st.res||{};var n=((r.name||'Name')+'_'+(r.klasse||'')).replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,'_').replace(/_+$/,'');return APP.file+'_'+n+'.txt';}
-var NCORE=STATIONS.filter(function(x){return !x.pro;}).length;
-function standInfo(){var n=st.done.slice(0,NCORE).filter(Boolean).length,cur=STATIONS[st.station]?STATIONS[st.station].name:'';
-  if(n>=NCORE)return '<b>Alle '+NCORE+' Stationen geschafft.</b>'+(st.done[NCORE]?' Profi-Zusatz auch!':' Wenn noch Zeit ist: Profi-Zusatz ★.');
-  return '<b>Zwischenstand: '+n+' von '+NCORE+' Stationen geschafft.</b> Ihr seid gerade bei „'+esc(cur)+'“. Alles, was ihr bis jetzt bearbeitet habt, wird gespeichert.';}
+function ncore(){return STATIONS.filter(function(x){return !x.pro;}).length;}
+function nDone(){return st.done.slice(0,ncore()).filter(Boolean).length;}
+function standInfo(){var N=ncore(),n=nDone(),S=STATIONS[st.station],cur=S?S.name:'';
+  if(n>=N)return '<b>Alle '+N+' Stationen geschafft.</b>'+(st.done[N]?' Profi-Zusatz auch!':(S&&S.pro?' Ihr seid gerade beim Profi-Zusatz ★.':' Wenn noch Zeit ist: Profi-Zusatz ★.'));
+  return '<b>Zwischenstand: '+n+' von '+N+' Stationen geschafft.</b> Ihr seid gerade bei „'+esc(cur)+'“. Alles, was ihr bis jetzt bearbeitet habt, wird gespeichert.';}
+function standLine(){var N=ncore(),n=nDone();return 'Stand: '+(n>=N?'fertig (alle '+N+' Stationen)':'Zwischenstand ('+n+' von '+N+' Stationen, zuletzt bei „'+STATIONS[st.station].name+'“)');}
 function resultsHTML(){var r=st.res||{};
   return '<div class="dlghead"><h3 id="saveTitle">Ergebnisse speichern</h3><button class="xbtn" type="button" id="saveClose" aria-label="Schließen">×</button></div>'+
    '<p class="stand" id="standInfo">'+standInfo()+'</p>'+
@@ -324,8 +326,8 @@ function bindCTA(){var b=$('ctaSave');if(b)b.addEventListener('click',openSave);
 /* ---------- Start: Name und Klasse ---------- */
 function startDialog(){var r=st.res||{};if(r.name&&r.klasse)return;
   var ov=document.createElement('div');ov.className='abg-ov';
-  ov.innerHTML='<div class="abg-box" role="dialog" aria-modal="true" aria-labelledby="stH"><p class="eyebrow">Woher kommt unsere tägliche Energie?</p><h2 id="stH">Willkommen bei der Strom-Spur!</h2>'+
-    '<p>Heute verfolgst du den Weg des Stroms: von der Energiequelle bis in die Steckdose.</p>'+
+  ov.innerHTML='<div class="abg-box" role="dialog" aria-modal="true" aria-labelledby="stH"><p class="eyebrow">'+APP.lesson+'</p><h2 id="stH">'+APP.welcome+'</h2>'+
+    '<p>'+APP.intro+'</p>'+
     '<p class="muted">Arbeitet ihr zu zweit? Dann tragt beide Namen ein.</p>'+
     '<div class="abg-row"><label for="stName">Name(n)</label><input class="abg-in" id="stName" autocomplete="off" style="width:14em" value="'+esc(r.name)+'" placeholder="Vorname N."></div>'+
     '<div class="abg-row"><label for="stKl">Klasse</label><input class="abg-in" id="stKl" autocomplete="off" style="width:6em" value="'+esc(r.klasse)+'" placeholder="10a"></div>'+
@@ -340,6 +342,11 @@ function openSave(){lastFocus=document.activeElement;$('saveBody').innerHTML=res
   $('saveOpen').classList.remove('pulse');st.remindOff=true;save();
   setTimeout(function(){var n=$('resName');(n&&!n.value?n:$('resSave')).focus();},30);}
 function closeSave(){$('saveDlg').hidden=true;document.body.style.overflow='';$('saveBody').innerHTML='';if(lastFocus&&lastFocus.focus)try{lastFocus.focus();}catch(e){}}
+function remind(){if(!st.remindOff&&st.t0&&Date.now()-st.t0>25*60000)$('saveOpen').classList.add('pulse');}
+function initSave(){$('saveOpen').addEventListener('click',openSave);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('saveDlg').hidden)closeSave();});
+  $('saveDlg').addEventListener('click',function(e){if(e.target===this)closeSave();});
+  setInterval(remind,30000);}
 function bindResults(){
   if(!$('resSave'))return;st.res=st.res||{};
   function upd(){st.res.name=$('resName').value.trim();st.res.klasse=$('resKlasse').value.trim();save();if(!$('resTxt').hidden)$('resTxt').value=resText();}
@@ -607,19 +614,19 @@ function r6(){var s=st.s6;
   $('task').innerHTML=head(5,'Wirkungsgrad berechnen')+'<p class="muted">Formel: Wirkungsgrad η = genutzte Energie : zugeführte Energie · 100 %</p>'+
     box('eta','<b>1.</b> Ein Kohlekraftwerk bekommt pro Sekunde <b>2500 MJ</b> chemische Energie aus der Kohle. Es gibt <b>1000 MJ</b> elektrische Energie ab. Wie groß ist der Wirkungsgrad?','%',s.eta,s.etaOk)+
     (s.etaOk?box('loss','<b>2.</b> Ein Gaskraftwerk hat einen Wirkungsgrad von <b>60 %</b>. Wie viel Energie wird von <b>1000 MJ</b> Brennstoffenergie als Abwärme entwertet?','MJ',s.loss,s.lossOk):'')+
-    (s.lossOk?'<p class="win"><b>Profi!</b> Das Gaskraftwerk entwertet weniger Energie als das Kohlekraftwerk. Darum ist sein Wirkungsgrad besser.</p>'+saveCTA(true):'');
+    (s.lossOk?'<p class="win"><b>Profi!</b> Das Gaskraftwerk entwertet weniger Energie als das Kohlekraftwerk. Darum ist sein Wirkungsgrad besser.</p>'+saveCTA(true):'');bindCTA();
   function chk(id,val,key,flag,okMsg,badMsg,sol){var b=$('b'+id);if($(id))$(id).addEventListener('input',function(){s[id]=this.value;save();});if(!b)return;b.addEventListener('click',function(){var v=num(s[id]),ok=Math.abs(v-val)<0.6,fb=$('fb'+id);tryInc(key,ok,s[id]);
     if(ok){s[flag]=true;save();r6();helpMsg('fb'+id,okMsg);return;}fb.className='fb bad';fb.textContent=badMsg(v);showHelp(fb,key,function(){s[id]=sol;s[flag]=true;save();r6();});});}
   chk('eta',40,'s6eta','etaOk','Richtig! 1000 MJ : 2500 MJ = 0,4 = 40 %.',function(v){return Math.abs(v-0.4)<0.01?'Fast! 0,4 ist richtig, gebt es aber in Prozent an.':'Teilt die genutzte Energie durch die zugeführte Energie.';},'40');
   chk('loss',400,'s6loss','lossOk','Richtig! 40 % von 1000 MJ = 400 MJ Abwärme.',function(v){return Math.abs(v-600)<1?'Das ist die genutzte elektrische Energie. Gefragt ist die Abwärme.':'Wenn 60 % genutzt werden, wie viel Prozent werden entwertet?';},'400');
-  if(s.etaOk)helpMsg('fbeta','Richtig! 1000 MJ : 2500 MJ = 0,4 = 40 %.');if(s.lossOk)helpMsg('fbloss','Richtig! 40 % von 1000 MJ = 400 MJ Abwärme.');bindCTA();}
+  if(s.etaOk)helpMsg('fbeta','Richtig! 1000 MJ : 2500 MJ = 0,4 = 40 %.');if(s.lossOk)helpMsg('fbloss','Richtig! 40 % von 1000 MJ = 400 MJ Abwärme.');}
 
 /* ---------- Ergebnisse als Text ---------- */
 var TL=FIT.map(function(q,i){return ['s1'+q.id,'Fit-Check '+(i+1)+' · '+q.topic];}).concat([['s2sort','Energiequellen · Sortieren'],['s2gas','Energiequellen · Erdgas'],['s2bio','Energiequellen · Biomasse'],['s3chain','Kraftwerk · Energiekette'],['s3gen','Kraftwerk · Generator'],['s3heat','Kraftwerk · Abwärme'],['s3wind','Kraftwerk · Windkraftwerk'],['s4top','Strommix · größte Quelle'],['s4fos','Strommix · größte fossile Quelle'],['s4grow','Strommix · Entwicklung'],['s4nuc','Strommix · Kernenergie'],['s5gaps','Merksatz · Lückentext'],['s6eta','Profi · Wirkungsgrad'],['s6loss','Profi · Abwärme']]);
 function resText(){var r=st.res||{},d=new Date(),L=[];
   L.push('STROM-SPUR · Woher kommt unsere tägliche Energie?');
   L.push('Name: '+(r.name||'')+'    Klasse: '+(r.klasse||'')+'    Datum: '+d.toLocaleDateString('de-DE')+', '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
-  L.push('Stand: '+(st.done.slice(0,NCORE).filter(Boolean).length>=NCORE?'fertig (alle '+NCORE+' Stationen)':'Zwischenstand ('+st.done.slice(0,NCORE).filter(Boolean).length+' von '+NCORE+' Stationen, zuletzt bei „'+STATIONS[st.station].name+'“)'));
+  L.push(standLine());
   L.push('Geschafft: '+STATIONS.map(function(x,i){return x.name+(st.done[i]?' ✓':' –');}).join(' | '));L.push('');
   L.push('MEINE VERMUTUNG: '+(st.guess?guessName(st.guess):'keine gewählt')+(st.guess==='C'?'  → stimmt':'  → richtig ist C (55,1 %)'));L.push('');
   L.push('FIT-CHECK (Diagnose Jg. 8, erste Antwort zählt)');
@@ -641,13 +648,8 @@ function resText(){var r=st.res||{},d=new Date(),L=[];
 var lastSc=null;
 function render(){var sc=STATIONS[st.station].scene;if(sc!==lastSc){if(sc==='plant')st.ptype='kohle';lastSc=sc;}
   renderRoute();renderCtl();[r1,r2,r3,r4,r5,r6][st.station]();resize();}
-bindReset();
+bindReset();initSave();
 window.addEventListener('resize',resize);
-$('saveOpen').addEventListener('click',openSave);
-document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('saveDlg').hidden)closeSave();});
-$('saveDlg').addEventListener('click',function(e){if(e.target===this)closeSave();});
-function remind(){if(!st.remindOff&&st.t0&&Date.now()-st.t0>25*60000)$('saveOpen').classList.add('pulse');}
-setInterval(remind,30000);
 if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)');if(mq.addEventListener)mq.addEventListener('change',draw);}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
 load();if(!st.t0){st.t0=Date.now();save();}if(!unlocked(st.station))st.station=0;
