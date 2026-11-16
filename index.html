@@ -6,18 +6,17 @@
 <title>Lern-Apps</title>
 <!--
   Diese Seite leitet nur noch weiter.
-  Alle Apps (Mathe + Physik) stehen jetzt auf EINER Startseite:
-  https://krutzky.github.io/Mathe/  (Bereich „Physik“)
-  Neue Physik-Apps trägst du dort in der Datei index.html im Repo „Mathe“
-  unter PHYSIK_APPS ein. Die App-Dateien selbst bleiben hier im Repo „Physik“.
+  Alle Apps (Mathe + Physik) stehen auf EINER Startseite: https://krutzky.github.io
+  Neue Apps trägst du in der Datei index.html im Repo „krutzky.github.io“ ein.
+  Die App-Dateien selbst bleiben hier in diesem Repo.
 -->
 <script>
   var h = location.hash.replace(/^#/, "");
-  location.replace("../Mathe/#f=Physik" + (h ? "&" + h : ""));
+  location.replace("../#f=Physik" + (h ? "&" + h : ""));
 </script>
-<noscript><meta http-equiv="refresh" content="0; url=../Mathe/#f=Physik"></noscript>
+<noscript><meta http-equiv="refresh" content="0; url=../#f=Physik"></noscript>
 </head>
 <body>
-  <p><a href="../Mathe/#f=Physik">Weiter zu den Physik-Apps</a></p>
+  <p><a href="../#f=Physik">Weiter zu den Lern-Apps</a></p>
 </body>
 </html>
